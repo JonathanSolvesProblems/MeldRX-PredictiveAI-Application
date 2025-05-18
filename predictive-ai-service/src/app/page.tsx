@@ -87,7 +87,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-base-100 p-6">
       <button onClick={() => console.log("TEST")}>
-        TEST to make sure webhook works 4
+        TEST to make sure webhook works 5
       </button>
       {/* <AnalyzeDocumentsButton /> */}
       <header className="flex items-center justify-between mb-6">
