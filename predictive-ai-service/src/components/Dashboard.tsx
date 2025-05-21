@@ -101,24 +101,24 @@ export default function Dashboard() {
       tasks.push(analyzeResource(type, items, promptFn, fetchFn));
     };
 
-    analyze("Condition", Condition);
-    analyze("Observation", Observation);
-    analyze(
-      "DocumentReference",
-      DocumentReference,
-      (doc) => `Analyze this document: ${doc.type?.text || "Unknown Document"}`
-    );
-    analyze("AllergyIntolerance", AllergyIntolerance);
-    analyze("CarePlan", CarePlan);
-    analyze("CareTeam", CareTeam);
-    analyze("Device", Device);
-    analyze("DiagnosticReport", DiagnosticReport);
-    analyze("Encounter", Encounter);
-    analyze("Goal", Goal);
-    analyze("Immunization", Immunization);
-    analyze("MedicationStatement", MedicationStatement);
-    analyze("Procedure", Procedure);
-    analyze("Provenance", Provenance);
+    // analyze("Condition", Condition);
+    // analyze("Observation", Observation);
+    // analyze(
+    //   "DocumentReference",
+    //   DocumentReference,
+    //   (doc) => `Analyze this document: ${doc.type?.text || "Unknown Document"}`
+    // );
+    // analyze("AllergyIntolerance", AllergyIntolerance);
+    // analyze("CarePlan", CarePlan);
+    // analyze("CareTeam", CareTeam);
+    // analyze("Device", Device);
+    // analyze("DiagnosticReport", DiagnosticReport);
+    // analyze("Encounter", Encounter);
+    // analyze("Goal", Goal);
+    // analyze("Immunization", Immunization);
+    // analyze("MedicationStatement", MedicationStatement);
+    // analyze("Procedure", Procedure);
+    // analyze("Provenance", Provenance);
 
     await Promise.all(tasks);
     setStatus("Analysis completed.");
