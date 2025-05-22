@@ -70,6 +70,8 @@ export const DocumentWheel: React.FC = () => {
       if (!res.ok) throw new Error(await res.text());
 
       const { content, contentType } = await res.json();
+      console.log("content is ", content);
+      console.log("contentType is ", contentType);
       setDocContent(content);
       setDocContentType(contentType);
       setDocContentCache((prev) => ({
