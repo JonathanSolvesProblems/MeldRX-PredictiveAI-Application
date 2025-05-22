@@ -7,6 +7,7 @@ import { addAnalysis } from "@/app/redux/analysisSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import AnalysisPDF from "./AnalysisPDF";
 import { useAIQueue } from "./hooks/useAIQueue";
+import * as XLSX from "xlsx";
 
 type DocumentReference = {
   id: string;
@@ -47,12 +48,25 @@ export const DocumentWheel: React.FC = () => {
     if (!file) return;
 
     try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      if (!Array.isArray(parsed))
-        throw new Error("Invalid format: JSON must be an array of strings");
-      setTemplatedQuestions(parsed);
-      alert("Templated questions loaded!");
+      if (file.name.endsWith(".json")) {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (!Array.isArray(parsed))
+          throw new Error("Invalid format: JSON must be an array of strings");
+        setTemplatedQuestions(parsed);
+        alert("Templated questions loaded!");
+      } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx")) {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        const questions = json.flat().filter((q) => typeof q === "string");
+        setTemplatedQuestions(questions);
+        alert("Templated questions loaded from Excel!");
+      } else {
+        throw new Error("Unsupported file type. Use JSON or Excel.");
+      }
     } catch (e) {
       alert("Failed to load questions: " + (e as Error).message);
     }
@@ -97,7 +111,9 @@ export const DocumentWheel: React.FC = () => {
         doc,
         (doc) => {
           const cached = docContentCache[doc.id];
-          return `You are a clinical documentation analyst AI. Carefully review the provided medical document content below. Focus only on the clinical or diagnostic information, not on metadata or formatting.
+          return `You are a clinical documentation analyst AI. Carefully review the provided medical document content below. This content may include structured clinical text, scanned notes, or diagnostic images such as X-rays.
+
+          If the content is an image or refers to one (e.g., base64 image data or image URL), assume it's a medical diagnostic image (like an X-ray or scan). If it’s an image, describe any visible abnormalities or likely clinical findings in clear language.
 
           Document content:
           --------------------
@@ -106,9 +122,8 @@ export const DocumentWheel: React.FC = () => {
           ${
             templatedQuestions.length > 0
               ? `
-          
-          Answer the following questions based strictly on the document content above. If any question cannot be answered from the document, say "No relevant information found."
-          
+          Answer the following questions based strictly on the document content above. If any question cannot be answered, say "No relevant information found."
+
           Questions:
           ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           `
@@ -167,7 +182,7 @@ export const DocumentWheel: React.FC = () => {
           📥 Import Questions
           <input
             type="file"
-            accept=".json"
+            accept=".json,.xls,.xlsx"
             hidden
             onChange={handleFileUpload}
           />
@@ -192,8 +207,6 @@ export const DocumentWheel: React.FC = () => {
             >
               <div className="card-body space-y-2">
                 <h2 className="card-title">
-                  {console.log("doc is ", JSON.stringify(doc))}
-                  {console.log("attachment is ", JSON.stringify(attachment))}
                   {doc.type?.text ||
                     doc?.description ||
                     attachment?.contentType ||
