@@ -194,7 +194,10 @@ export const DocumentWheel: React.FC = () => {
                 <h2 className="card-title">
                   {console.log("doc is ", JSON.stringify(doc))}
                   {console.log("attachment is ", JSON.stringify(attachment))}
-                  {doc.type?.text || attachment?.contentType || "Unknown Type"}
+                  {doc.type?.text ||
+                    doc?.description ||
+                    attachment?.contentType ||
+                    "Unknown Type"}
                 </h2>
                 <p className="text-sm text-gray-500">
                   Date:{" "}
