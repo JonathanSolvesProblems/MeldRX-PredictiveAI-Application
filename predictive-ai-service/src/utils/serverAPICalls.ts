@@ -13,7 +13,7 @@ export async function fetchAIResponse(
     const res = await fetch("/api/analyzeDataViaMeldRxInfrastructure", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, item, token }), // <-- include token here
+      body: JSON.stringify({ prompt, item, token }), 
       signal: signal || controller.signal,
     });
 
@@ -25,6 +25,13 @@ export async function fetchAIResponse(
     }
 
     const data = await res.json();
+
+     const patientId = item?.subject?.reference?.split("/")[1];
+     console.log("Patient ID:", patientId);
+    if (patientId && data?.result) {
+      updateLastAnalyzed(patientId, token);
+    }
+
     return { result: data.result || data };
   } catch (err: any) {
     clearTimeout(timeoutId);
@@ -36,5 +43,21 @@ export async function fetchAIResponse(
       return { error: "Request timed out." };
     }
     return { error: `Unexpected error: ${err.message || err.toString()}` };
+  }
+}
+
+async function updateLastAnalyzed(patientId: string, token: string) {
+  const today = new Date().toISOString().split("T")[0];
+  try {
+    const res = await fetch(`/api/updateLastAnalyzed?patientId=${patientId}&date=${today}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) throw new Error(await res.text());
+    console.log(`✅ Last analyzed updated for ${patientId}`);
+  } catch (err) {
+    console.error("❌ Failed to update last analyzed:", err);
   }
 }

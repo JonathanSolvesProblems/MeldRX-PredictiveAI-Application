@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { setUser, setToken, setPatientId } from "./redux/authSlice"; // Adjust path to redux slice
 import { handleCallback, handleLaunch } from "../utils/auth"; // Assuming these functions are implemented
 import axios from "axios";
-import { SimulateLastAnalyzed } from "@/components/SimulateLastAnalyzed";
 import Dashboard from "@/components/Dashboard";
 import { DocumentWheel } from "@/components/DocumentWheel";
 // import AnalyzeDocumentsButton from "@/components/AnalyzeDocumentsButton";
@@ -113,7 +112,6 @@ export default function Home() {
             <p className="text-center text-xl">Loading Patient Name...</p>
           )}
 
-          <SimulateLastAnalyzed />
           {/* <DebugData /> */}
           <Dashboard />
           {/* <DashboardBackup /> */}
