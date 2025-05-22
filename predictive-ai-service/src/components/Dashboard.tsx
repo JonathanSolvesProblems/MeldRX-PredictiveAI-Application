@@ -19,34 +19,29 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-  const analyzeMCPContext = async () => {
+  const analyzeData = async () => {
     cancelRef.current = false;
     setIsRunning(true);
-    setStatus("Analyzing with MCP context...");
+    setStatus("Initializing...");
 
     try {
-      const result = await analyzeItem(
-        "MCP",
-        null,
-        () =>
-          `Analyze all available patient data. Answer relevant templated clinical questions and list the source files used for each answer to ensure credibility.`
-      );
+      const prompt = () => `
+    Analyze this patient's medical history using all available data.
+    List any important diagnoses, treatments, and lab results.
+    Include which files or resources you used to reach these conclusions, with references the user can follow.
+    `;
 
-      if (result.error) {
-        setResults({ MCP: [{ index: 0, error: result.error }] });
-        setError(result.error);
-        setErrors({ MCP: [result.error] });
-      } else {
-        setResults({ MCP: [{ index: 0, result: result.result || result }] });
-        setProgressMap({ MCP: 100 });
-        setExpanded({ MCP: true });
-        setPages({ MCP: 1 });
-      }
+      setStatus("Analyzing entire patient context...");
+      const res = await analyzeItem("Patient Info", null, prompt);
+
+      setResults({ MCP: [{ result: res.result || res }] });
+      setPages({ MCP: 1 });
+      setExpanded({ MCP: true });
+      setProgressMap({ MCP: 100 });
     } catch (err: any) {
       const errorMessage = `Unexpected error: ${err.message || err}`;
       setError(errorMessage);
-      setResults({ MCP: [{ index: 0, error: errorMessage }] });
-      setErrors({ MCP: [errorMessage] });
+      setResults({ MCP: [{ error: errorMessage }] });
     }
 
     setStatus("Analysis completed.");
@@ -54,7 +49,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    analyzeMCPContext();
+    analyzeData();
   }, []);
 
   const toggleExpand = (type: string) =>

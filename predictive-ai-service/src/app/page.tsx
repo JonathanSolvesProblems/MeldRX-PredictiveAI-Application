@@ -8,7 +8,6 @@ import axios from "axios";
 import { DocumentWheel } from "@/components/DocumentWheel";
 import Dashboard from "@/components/Dashboard";
 // import AnalyzeDocumentsButton from "@/components/AnalyzeDocumentsButton";
-// import { DocumentWheel } from "@/components/DocumentWheel";
 // import Dashboard from "@/components/Dashboard";
 
 export default function Home() {
