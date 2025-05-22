@@ -70,8 +70,6 @@ export const DocumentWheel: React.FC = () => {
       if (!res.ok) throw new Error(await res.text());
 
       const { content, contentType } = await res.json();
-      console.log("content is ", content);
-      console.log("contentType is ", contentType);
       setDocContent(content);
       setDocContentType(contentType);
       setDocContentCache((prev) => ({
@@ -194,6 +192,8 @@ export const DocumentWheel: React.FC = () => {
             >
               <div className="card-body space-y-2">
                 <h2 className="card-title">
+                  {console.log("doc is ", JSON.stringify(doc))}
+                  {console.log("attachment is ", JSON.stringify(attachment))}
                   {doc.type?.text || attachment?.contentType || "Unknown Type"}
                 </h2>
                 <p className="text-sm text-gray-500">
