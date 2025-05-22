@@ -1,13 +1,35 @@
+import { RootState } from "@/app/redux/store";
 import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import { Progress } from "./ui/Progress";
 import { Card, CardContent } from "./ui/CardContent";
 import { Spinner } from "./ui/Spinner";
+import { useAllPatientData } from "./hooks/useAllPatientData";
 import { useAIQueue } from "./hooks/useAIQueue";
+import { fetchDocumentContent } from "@/utils/fhirAPICalls";
 
 const PAGE_SIZE = 5;
 
-export default function Dashboard() {
+export default function DashboardBeforeMCP() {
   const { analyzeItem } = useAIQueue();
+
+  const { allResources, totalCount } = useAllPatientData();
+  const {
+    Condition = [],
+    Observation = [],
+    DocumentReference = [],
+    AllergyIntolerance = [],
+    CarePlan = [],
+    CareTeam = [],
+    Device = [],
+    DiagnosticReport = [],
+    Encounter = [],
+    Goal = [],
+    Immunization = [],
+    MedicationStatement = [],
+    Procedure = [],
+    Provenance = [],
+  } = allResources;
 
   const [status, setStatus] = useState("");
   const [results, setResults] = useState<Record<string, any[]>>({});
@@ -16,46 +38,96 @@ export default function Dashboard() {
   const [pages, setPages] = useState<Record<string, number>>({});
   const [isRunning, setIsRunning] = useState(true);
   const cancelRef = useRef(false);
+  const [docLoading, setDocLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-  const analyzeMCPContext = async () => {
+  const analyzeResource = async (
+    type: string,
+    items: any[],
+    promptFn?: (item: any) => string,
+    fetchFn?: (item: any) => Promise<any>
+  ) => {
+    const localResults: any[] = [];
+
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index];
+      setStatus(`Analyzing ${type} ${index + 1} of ${items.length}`);
+      try {
+        const res = await analyzeItem(type, item, promptFn, fetchFn);
+
+        if (res.error) {
+          localResults.push({ index, error: res.error });
+        } else {
+          localResults.push({ index, result: res.result || res });
+        }
+      } catch (err: any) {
+        const errorMessage = `Unexpected error: ${err.message || err}`;
+        localResults.push({ index, error: errorMessage });
+        setError(errorMessage);
+        setErrors((prev) => ({
+          ...prev,
+          [type]: [...(prev[type] || []), errorMessage],
+        }));
+      }
+
+      setProgressMap((prev) => ({
+        ...prev,
+        [type]: Math.round(((index + 1) / items.length) * 100),
+      }));
+    }
+    setResults((prev) => ({
+      ...prev,
+      [type]: [...(prev[type] || []), ...localResults],
+    }));
+  };
+
+  const analyzeData = async () => {
     cancelRef.current = false;
     setIsRunning(true);
-    setStatus("Analyzing with MCP context...");
+    setStatus("Initializing...");
 
-    try {
-      const result = await analyzeItem(
-        "MCP",
-        null,
-        () =>
-          `Analyze all available patient data. Answer relevant templated clinical questions and list the source files used for each answer to ensure credibility.`
-      );
+    const tasks: Promise<void>[] = [];
 
-      if (result.error) {
-        setResults({ MCP: [{ index: 0, error: result.error }] });
-        setError(result.error);
-        setErrors({ MCP: [result.error] });
-      } else {
-        setResults({ MCP: [{ index: 0, result: result.result || result }] });
-        setProgressMap({ MCP: 100 });
-        setExpanded({ MCP: true });
-        setPages({ MCP: 1 });
-      }
-    } catch (err: any) {
-      const errorMessage = `Unexpected error: ${err.message || err}`;
-      setError(errorMessage);
-      setResults({ MCP: [{ index: 0, error: errorMessage }] });
-      setErrors({ MCP: [errorMessage] });
-    }
+    // Analyze each resource type, including DocumentReference with custom handling
+    const analyze = (
+      type: string,
+      items: any[],
+      promptFn?: (item: any) => string,
+      fetchFn?: (item: any) => Promise<any>
+    ) => {
+      setPages((p) => ({ ...p, [type]: 1 }));
+      setExpanded((e) => ({ ...e, [type]: true }));
+      tasks.push(analyzeResource(type, items, promptFn, fetchFn));
+    };
 
+    // analyze("Condition", Condition);
+    // analyze("Observation", Observation);
+    // analyze(
+    //   "DocumentReference",
+    //   DocumentReference,
+    //   (doc) => `Analyze this document: ${doc.type?.text || "Unknown Document"}`
+    // );
+    // analyze("AllergyIntolerance", AllergyIntolerance);
+    // analyze("CarePlan", CarePlan);
+    // analyze("CareTeam", CareTeam);
+    // analyze("Device", Device);
+    // analyze("DiagnosticReport", DiagnosticReport);
+    // analyze("Encounter", Encounter);
+    // analyze("Goal", Goal);
+    // analyze("Immunization", Immunization);
+    // analyze("MedicationStatement", MedicationStatement);
+    // analyze("Procedure", Procedure);
+    // analyze("Provenance", Provenance);
+
+    await Promise.all(tasks);
     setStatus("Analysis completed.");
     setIsRunning(false);
   };
 
   useEffect(() => {
-    analyzeMCPContext();
-  }, []);
+    if (totalCount > 0) analyzeData();
+  }, [totalCount]);
 
   const toggleExpand = (type: string) =>
     setExpanded((prev) => ({ ...prev, [type]: !prev[type] }));
@@ -148,7 +220,7 @@ export default function Dashboard() {
         );
       })}
 
-      {isRunning && <Spinner />}
+      {docLoading && <Spinner />}
       {error && <p className="text-red-500">{error}</p>}
     </div>
   );
