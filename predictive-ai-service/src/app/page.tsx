@@ -6,7 +6,6 @@ import { setUser, setToken, setPatientId } from "./redux/authSlice"; // Adjust p
 import { handleCallback, handleLaunch } from "../utils/auth"; // Assuming these functions are implemented
 import axios from "axios";
 import { DocumentWheel } from "@/components/DocumentWheel";
-import Dashboard from "@/components/Dashboard";
 // import AnalyzeDocumentsButton from "@/components/AnalyzeDocumentsButton";
 // import Dashboard from "@/components/Dashboard";
 
@@ -112,7 +111,7 @@ export default function Home() {
           )}
 
           {/* <DebugData /> */}
-          <Dashboard />
+          {/* <Dashboard /> */}
           {/* <DashboardBackup /> */}
         </>
       ) : (
