@@ -2,6 +2,7 @@ export async function fetchAIResponse(
   prompt: string,
   item: any,
   token: string,
+  patientId: string | null,
   signal?: AbortSignal,
   retries = 2,
   timeout = 15000
@@ -26,8 +27,11 @@ export async function fetchAIResponse(
 
     const data = await res.json();
 
-     const patientId = item?.subject?.reference?.split("/")[1];
-     console.log("Patient ID:", patientId);
+    if (!patientId) {
+       patientId = item?.subject?.reference?.split("/")[1] ?? null;
+    }
+ 
+    console.log("Patient ID:", patientId);
     if (patientId && data?.result) {
       updateLastAnalyzed(patientId, token);
     }
@@ -38,7 +42,7 @@ export async function fetchAIResponse(
     if (err.name === "AbortError") {
       if (retries > 0) {
         console.warn("⚠️ Timeout occurred, retrying...", retries);
-        return await fetchAIResponse(prompt, item, token, undefined, retries - 1, timeout);
+        return await fetchAIResponse(prompt, item, token, patientId, undefined, retries - 1, timeout);
       }
       return { error: "Request timed out." };
     }

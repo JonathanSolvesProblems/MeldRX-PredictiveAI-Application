@@ -43,8 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { item, prompt, token } = req.body;
 
-  if (!item || !prompt) {
-    return res.status(400).json({ error: "Missing required fields: item or prompt" });
+  if (!prompt) {
+    return res.status(400).json({ error: "Missing required field: prompt" });
   }
 
   try {
@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let base64Content: string | null = null;
     let contentType: string | null = null;
 
-    if (item.resourceType === "DocumentReference" && item.content?.[0]?.attachment?.url) {
+    if (item?.resourceType === "DocumentReference" && item?.content?.[0]?.attachment?.url) {
       const attachment = item.content[0].attachment;
       const attachmentUrl = attachment.url;
       contentType = attachment.contentType || "application/octet-stream";
@@ -77,21 +77,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    const trimmedInput = trimLargeFields(preparedInput);
-
     // Validate and set fhirResource
     let fhirResourcePayload: any = null;
-    if (base64Content) {
-      fhirResourcePayload = {
-        resourceType: item.resourceType,
-        id: item.id,
-        type: item.type,
-      };
-    } else {
-      if (typeof trimmedInput !== "object" || Array.isArray(trimmedInput)) {
-        throw new Error("Invalid FHIR resource: expected an object");
-      }
-      fhirResourcePayload = trimmedInput;
+
+    if (item) {
+        const trimmedInput = trimLargeFields(preparedInput);
+
+         if (base64Content) {
+            fhirResourcePayload = {
+            resourceType: item.resourceType,
+            id: item.id,
+            type: item.type,
+          };
+        } else {
+          if (typeof trimmedInput !== "object" || Array.isArray(trimmedInput)) {
+            throw new Error("Invalid FHIR resource: expected an object");
+        }
+        fhirResourcePayload = trimmedInput;
+      }    
     }
 
     const aiRequest = {

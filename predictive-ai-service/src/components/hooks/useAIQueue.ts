@@ -8,7 +8,7 @@ type FetchFn = (item: any) => Promise<{ content: string; contentType: string }>;
 
 export const useAIQueue = () => {
   const token = useSelector((state: RootState) => state.auth.token);
-
+  const patientId = useSelector((state: RootState) => state.auth.patientId);
 
   const retryFetch = async (
     item: any,
@@ -22,7 +22,7 @@ export const useAIQueue = () => {
 
       try {
         console.log("⚙️ Fetching AI response...");
-        const response = await fetchAIResponse(prompt, item, token, controller.signal);
+        const response = await fetchAIResponse(prompt, item, token, patientId, controller.signal);
 
         console.log("✅ AI response fetched: " + JSON.stringify(response));
         clearTimeout(timeoutId);
@@ -57,13 +57,18 @@ export const useAIQueue = () => {
     customPrompt?: (item: any) => string,
     fetchFn?: FetchFn
   ) => {
-    let prompt = customPrompt
-      ? customPrompt(item)
-      : `Analyze the following ${type}:\n${JSON.stringify(item, null, 2)}`;
+    let prompt = "";
 
+    if (customPrompt) {
+      prompt = customPrompt(item);
+    } else if (item !== null) {
+      prompt = `Analyze the following ${type}:\n${JSON.stringify(item, null, 2)}`;
+     } else {
+      throw new Error("No prompt or item provided to analyze.");
+    }
+    
     // If fetchFn is provided (e.g., for documents), call it first
-    if (fetchFn) {
-
+     if (fetchFn && item) {
       const { content, contentType } = await fetchFn(item);
       prompt = `Analyze this ${type} content (Content-Type: ${contentType}):\n${content}`;
     }
