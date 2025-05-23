@@ -3,11 +3,14 @@ import { Progress } from "./ui/Progress";
 import { Card, CardContent } from "./ui/CardContent";
 import { Spinner } from "./ui/Spinner";
 import { useAIQueue } from "./hooks/useAIQueue";
+import { useAllPatientData } from "./hooks/useAllPatientData";
 
 const PAGE_SIZE = 5;
 
 export default function Dashboard() {
   const { analyzeItem } = useAIQueue();
+  const { allResources, totalCount } = useAllPatientData();
+  console.log("patient data fetched with new dashboard component");
 
   const [status, setStatus] = useState("");
   const [results, setResults] = useState<Record<string, any[]>>({});
