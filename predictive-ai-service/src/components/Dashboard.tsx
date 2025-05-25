@@ -4,8 +4,6 @@ import { Card, CardContent } from "./ui/CardContent";
 import { Spinner } from "./ui/Spinner";
 import { useAIQueue } from "./hooks/useAIQueue";
 import { useAllPatientData } from "./hooks/useAllPatientData";
-import { useSelector } from "react-redux";
-import { RootState } from "@reduxjs/toolkit/query";
 
 const PAGE_SIZE = 5;
 
@@ -23,7 +21,6 @@ export default function Dashboard() {
   const cancelRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
-  const patientId = useSelector((state: any) => state.auth.patientId);
 
   const analyzeData = async () => {
     cancelRef.current = false;
@@ -31,12 +28,16 @@ export default function Dashboard() {
     setStatus("Initializing...");
 
     try {
+      //   const prompt = () => `
+      // Analyze this patient's medical history using all available FHIR data. Their patient ID is ${patientId}. The FHIR resource is DocumentReference and the resource id is 0bb73ae5-6670-46df-80e1-e4613f30b032
+      // List any important diagnoses, treatments, and lab results.
+      // Include which files or resources you used to reach these conclusions, with references the user can follow.
+      // Note that you should already have access to the patient's data, as the model context protocol is configured, so you do not need to ask for any additional information.
+      // `;
+
       const prompt = () => `
-    Analyze this patient's medical history using all available FHIR data. Their patient ID is ${patientId}. The FHIR resource is DocumentReference and the resource id is 0bb73ae5-6670-46df-80e1-e4613f30b032
-    List any important diagnoses, treatments, and lab results.
-    Include which files or resources you used to reach these conclusions, with references the user can follow.
-    Note that you should already have access to the patient's data, as the model context protocol is configured, so you do not need to ask for any additional information.
-    `;
+        Analyze this patient's medical data using the available FHIR data. The FHIR resource is DocumentReference and the resource id is 0bb73ae5-6670-46df-80e1-e4613f30b032
+      `;
 
       console.log(prompt);
 
