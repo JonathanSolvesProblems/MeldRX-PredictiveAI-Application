@@ -3,6 +3,7 @@ export async function fetchAIResponse(
   item: any,
   token: string,
   patientId: string | null,
+  modelName: string,
   signal?: AbortSignal,
   retries = 2,
   timeout = 15000
@@ -14,7 +15,7 @@ export async function fetchAIResponse(
     const res = await fetch("/api/analyzeDataViaMeldRxInfrastructure", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, item, token }), 
+      body: JSON.stringify({ prompt, item, token, modelName }), 
       signal: signal || controller.signal,
     });
 
@@ -42,7 +43,7 @@ export async function fetchAIResponse(
     if (err.name === "AbortError") {
       if (retries > 0) {
         console.warn("⚠️ Timeout occurred, retrying...", retries);
-        return await fetchAIResponse(prompt, item, token, patientId, undefined, retries - 1, timeout);
+        return await fetchAIResponse(prompt, item, token, patientId, modelName, undefined, retries - 1, timeout);
       }
       return { error: "Request timed out." };
     }

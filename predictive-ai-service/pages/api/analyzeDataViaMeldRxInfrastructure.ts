@@ -41,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { item, prompt, token } = req.body;
+  const { item, prompt, token, modelName } = req.body;
 
   if (!prompt) {
     return res.status(400).json({ error: "Missing required field: prompt" });
@@ -98,13 +98,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const aiRequest = {
-      // model: "Llama-3.2-11B-Vision-Instruct",
-      model: "gpt-4o",
-      // systemMessage: `You are a clinical document analyst. Focus only on the medical and diagnostic content in the document or resource.
-      //   Do not discuss metadata (e.g., XML headers, encodings) or make generalizations.
-      //   If answering specific questions, only respond using information found directly in the content. 
-      //   If a question has no answer in the content, respond with "No relevant information found."`,
-      systemMessage: "You are a healthcare AI assistant.",
+      model: modelName,
+      systemMessage: `You are a clinical document analyst. Focus only on the medical and diagnostic content in the document or resource.
+        Do not discuss metadata (e.g., XML headers, encodings) or make generalizations.
+        If answering specific questions, only respond using information found directly in the content. 
+        If a question has no answer in the content, respond with "No relevant information found."`,
       chatMessage: prompt.slice(0, MAX_PROMPT_CHARS),
       base64BinaryData: base64Content || "",
       base64BinaryDataName: base64Content

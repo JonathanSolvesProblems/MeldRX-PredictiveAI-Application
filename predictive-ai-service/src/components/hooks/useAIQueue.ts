@@ -13,6 +13,7 @@ export const useAIQueue = () => {
   const retryFetch = async (
     item: any,
     prompt: string,
+    modelName: string,
     retries = 2,
     timeout = 30000 // increased to 30 seconds
   ): Promise<any> => {
@@ -22,7 +23,7 @@ export const useAIQueue = () => {
 
       try {
         console.log("⚙️ Fetching AI response...");
-        const response = await fetchAIResponse(prompt, item, token, patientId, controller.signal);
+        const response = await fetchAIResponse(prompt, item, token, patientId, modelName, controller.signal);
 
         console.log("✅ AI response fetched: " + JSON.stringify(response));
         clearTimeout(timeoutId);
@@ -54,6 +55,7 @@ export const useAIQueue = () => {
   const analyzeItem = async (
     type: string,
     item: any,
+    modelName: string,
     customPrompt?: (item: any) => string,
     fetchFn?: FetchFn
   ) => {
@@ -73,7 +75,7 @@ export const useAIQueue = () => {
       prompt = `Analyze this ${type} content (Content-Type: ${contentType}):\n${content}`;
     }
 
-    return await retryFetch(item, prompt);
+    return await retryFetch(item, prompt, modelName);
   };
 
   return { analyzeItem };

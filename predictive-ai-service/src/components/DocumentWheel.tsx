@@ -109,6 +109,7 @@ export const DocumentWheel: React.FC = () => {
       const res = await analyzeItem(
         "DocumentReference",
         doc,
+        "Llama-3.2-11B-Vision-Instruct",
         (doc) => {
           const cached = docContentCache[doc.id];
           return `You are a clinical documentation analyst AI. Carefully review the provided medical document content below. This content may include structured clinical text, scanned notes, or diagnostic images such as X-rays.

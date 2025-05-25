@@ -42,7 +42,7 @@ export default function Dashboard() {
       console.log(prompt);
 
       setStatus("Analyzing entire patient context...");
-      const res = await analyzeItem("Patient Info", null, prompt);
+      const res = await analyzeItem("Patient Info", null, "gpt-4o", prompt);
 
       setResults({ MCP: [{ result: res.result || res }] });
       setPages({ MCP: 1 });
