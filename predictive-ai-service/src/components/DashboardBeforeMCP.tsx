@@ -54,7 +54,13 @@ export default function DashboardBeforeMCP() {
       const item = items[index];
       setStatus(`Analyzing ${type} ${index + 1} of ${items.length}`);
       try {
-        const res = await analyzeItem(type, item, promptFn, fetchFn);
+        const res = await analyzeItem(
+          type,
+          item,
+          "Llama-3.2-11B-Vision-Instruct",
+          promptFn,
+          fetchFn
+        );
 
         if (res.error) {
           localResults.push({ index, error: res.error });
