@@ -98,7 +98,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const aiRequest = {
-      model: "Llama-3.2-11B-Vision-Instruct",
+      // model: "Llama-3.2-11B-Vision-Instruct",
+      model: "gpt-4o",
       // systemMessage: `You are a clinical document analyst. Focus only on the medical and diagnostic content in the document or resource.
       //   Do not discuss metadata (e.g., XML headers, encodings) or make generalizations.
       //   If answering specific questions, only respond using information found directly in the content. 
