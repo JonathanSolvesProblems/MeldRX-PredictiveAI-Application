@@ -36,7 +36,7 @@ export default function Dashboard() {
       // `;
 
       const prompt = () => `
-        Analyze this patient's medical data using the available FHIR data. The FHIR resource is DocumentReference and the resource id is 0bb73ae5-6670-46df-80e1-e4613f30b032
+        Retrieve and then analyze the patient's medical data using the available FHIR data. The FHIR resource is DocumentReference and the resource id is 0bb73ae5-6670-46df-80e1-e4613f30b032
       `;
 
       console.log(prompt);
