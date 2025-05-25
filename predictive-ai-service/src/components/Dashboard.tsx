@@ -32,7 +32,7 @@ export default function Dashboard() {
 
     try {
       const prompt = () => `
-    Analyze this patient's medical history using all available FHIR data. Their patient ID is ${patientId}
+    Analyze this patient's medical history using all available FHIR data. Their patient ID is ${patientId}. The FHIR resource is DocumentReference and the resource id is 0bb73ae5-6670-46df-80e1-e4613f30b032
     List any important diagnoses, treatments, and lab results.
     Include which files or resources you used to reach these conclusions, with references the user can follow.
     Note that you should already have access to the patient's data, as the model context protocol is configured, so you do not need to ask for any additional information.
