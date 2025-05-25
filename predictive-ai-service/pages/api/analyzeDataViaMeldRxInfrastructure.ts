@@ -47,6 +47,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Missing required field: prompt" });
   }
 
+  if (!modelName) {
+    return res.status(400).json({ error: "Missing required field: modelName" });
+  }
+
+
   try {
     let preparedInput = item;
     let base64Content: string | null = null;
