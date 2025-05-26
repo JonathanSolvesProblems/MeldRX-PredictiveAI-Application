@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Progress } from "./ui/Progress";
 import { Card, CardContent } from "./ui/CardContent";
 import { Spinner } from "./ui/Spinner";
@@ -85,10 +85,6 @@ export default function Dashboard() {
     setIsRunning(false);
   };
 
-  useEffect(() => {
-    analyzeData();
-  }, []);
-
   const toggleExpand = (type: string) =>
     setExpanded((prev) => ({ ...prev, [type]: !prev[type] }));
 
@@ -108,8 +104,21 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-4 max-h-screen overflow-y-auto">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+    <div className="p-6 max-h-screen overflow-y-auto">
+      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+
+      <div className="bg-base-200 p-4 rounded-lg mb-6">
+        <p className="text-md mb-2">
+          Click the{" "}
+          <span className="font-semibold">"Analyze Patient Data"</span> button
+          below to begin reviewing the patient's full medical history.
+        </p>
+        <p className="text-md">
+          <span className="font-semibold">Optional:</span> You can also import
+          templated questions from an Excel file first to tailor the analysis to
+          your specific needs.
+        </p>
+      </div>
 
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-gray-600">{status}</p>
@@ -182,6 +191,14 @@ export default function Dashboard() {
 
       {isRunning && <Spinner />}
       {error && <p className="text-red-500">{error}</p>}
+
+      {!isRunning && (
+        <div className="mt-6 flex justify-center">
+          <button className="btn btn-primary text-white" onClick={analyzeData}>
+            Analyze Patient Data
+          </button>
+        </div>
+      )}
     </div>
   );
 }
