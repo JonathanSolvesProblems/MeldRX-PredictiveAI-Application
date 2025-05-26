@@ -31,11 +31,33 @@ export default function Dashboard() {
     setStatus("Initializing...");
 
     try {
-      const prompt = () => `
-        Analyze this patient's medical history using all available FHIR data. Their patient ID is ${patientId}.
-        List any important diagnoses, treatments, and lab results.
-        Include which files or resources you used to reach these conclusions, with references the user can follow.
-      `;
+      const prompt = (patientId?: string): string => {
+        const templatedQuestions = useSelector(
+          (state: RootState) => state.questions.questions
+        );
+
+        const questionBlock = templatedQuestions?.length
+          ? `\n\nAdditional user-provided questions to guide your analysis:\n- ${templatedQuestions.join(
+              "\n- "
+            )}`
+          : "";
+
+        return `
+        Analyze the patient's complete medical history using all available FHIR data.${
+          patientId ? ` Their patient ID is ${patientId}.` : ""
+        }
+
+        Your response should:
+        - Identify important diagnoses, treatments, and lab results.
+        - Answer any templated or user-defined questions provided.
+        - Cite each FHIR resource type (e.g., Condition, Observation, MedicationRequest) you used to support your conclusions.
+        - Where possible, include direct references like resource IDs or filenames (e.g., DocumentReference/abc123).
+
+        Be concise, medically accurate, and clearly structure the findings.
+
+        ${questionBlock}
+          `.trim();
+      };
 
       // const prompt = () => `
       //   Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.

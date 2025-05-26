@@ -20,6 +20,7 @@ import practitionersReducer from './patientDataSlicers/practitionerSlice';
 import practitionerRolesReducer from './patientDataSlicers/practitionerRoleSlice';
 import proceduresReducer from './patientDataSlicers/procedureSlice';
 import provenancesReducer from './patientDataSlicers/provenanceSlice';
+import questionsReducer from './questionSlice';
 
 export const store = configureStore({
   reducer: {
@@ -44,7 +45,7 @@ export const store = configureStore({
     practitionerRoles: practitionerRolesReducer,
     procedures: proceduresReducer,
     provenances: provenancesReducer,
-
+    questions: questionsReducer,
   },
 });
 

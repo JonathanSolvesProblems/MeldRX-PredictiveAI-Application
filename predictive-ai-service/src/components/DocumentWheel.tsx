@@ -7,7 +7,7 @@ import { addAnalysis } from "@/app/redux/analysisSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import AnalysisPDF from "./AnalysisPDF";
 import { useAIQueue } from "./hooks/useAIQueue";
-import * as XLSX from "xlsx";
+import { QuestionUploader } from "./QuestionUploader";
 
 type DocumentReference = {
   id: string;
@@ -30,7 +30,6 @@ export const DocumentWheel: React.FC = () => {
     Record<string, string>
   >({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [templatedQuestions, setTemplatedQuestions] = useState<string[]>([]);
   const [docContentCache, setDocContentCache] = useState<
     Record<string, { content: string; contentType: string }>
   >({});
@@ -38,39 +37,11 @@ export const DocumentWheel: React.FC = () => {
   const [docContentType, setDocContentType] = useState<string | null>(null);
   const [showContentModal, setShowContentModal] = useState(false);
   const [docLoading, setDocLoading] = useState(false);
+  const templatedQuestions = useSelector(
+    (state: RootState) => state.questions.questions
+  );
 
   const { analyzeItem } = useAIQueue();
-
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      if (file.name.endsWith(".json")) {
-        const text = await file.text();
-        const parsed = JSON.parse(text);
-        if (!Array.isArray(parsed))
-          throw new Error("Invalid format: JSON must be an array of strings");
-        setTemplatedQuestions(parsed);
-        alert("Templated questions loaded!");
-      } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx")) {
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        const questions = json.flat().filter((q) => typeof q === "string");
-        setTemplatedQuestions(questions);
-        alert("Templated questions loaded from Excel!");
-      } else {
-        throw new Error("Unsupported file type. Use JSON or Excel.");
-      }
-    } catch (e) {
-      alert("Failed to load questions: " + (e as Error).message);
-    }
-  };
 
   const fetchAndShowDocument = async (doc: DocumentReference) => {
     setDocLoading(true);
@@ -178,23 +149,7 @@ export const DocumentWheel: React.FC = () => {
 
   return (
     <div className="overflow-x-auto py-4 space-y-4">
-      <div className="flex gap-4 items-center">
-        <label className="btn btn-outline btn-sm">
-          📥 Import Questions
-          <input
-            type="file"
-            accept=".json,.xls,.xlsx"
-            hidden
-            onChange={handleFileUpload}
-          />
-        </label>
-        {templatedQuestions.length > 0 && (
-          <span className="text-success text-sm">
-            ✓ {templatedQuestions.length} questions loaded
-          </span>
-        )}
-      </div>
-
+      <QuestionUploader />
       <div className="flex space-x-4">
         {documents.map((doc) => {
           const attachment = doc.content?.[0]?.attachment;
