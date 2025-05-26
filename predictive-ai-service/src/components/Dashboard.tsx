@@ -11,7 +11,7 @@ const PAGE_SIZE = 5;
 
 export default function Dashboard() {
   const { analyzeItem } = useAIQueue();
-  const { allResources, totalCount } = useAllPatientData();
+  const { allResources, totalCount } = useAllPatientData(); // TODO: May want to refactor, since this is fetching doc data too.
   console.log("patient data fetched with new dashboard component");
   const patientId = useSelector((state: RootState) => state.auth.patientId);
 
@@ -23,7 +23,9 @@ export default function Dashboard() {
   const [isRunning, setIsRunning] = useState(true);
   const cancelRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
-  const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const templatedQuestions = useSelector(
+    (state: RootState) => state.questions.questions
+  );
 
   const analyzeData = async () => {
     cancelRef.current = false;
@@ -31,11 +33,7 @@ export default function Dashboard() {
     setStatus("Initializing...");
 
     try {
-      const prompt = (patientId?: string): string => {
-        const templatedQuestions = useSelector(
-          (state: RootState) => state.questions.questions
-        );
-
+      const generatePrompt = (): string => {
         const questionBlock = templatedQuestions?.length
           ? `\n\nAdditional user-provided questions to guide your analysis:\n- ${templatedQuestions.join(
               "\n- "
@@ -43,30 +41,35 @@ export default function Dashboard() {
           : "";
 
         return `
-        Analyze the patient's complete medical history using all available FHIR data.${
-          patientId ? ` Their patient ID is ${patientId}.` : ""
-        }
+            Analyze the patient's complete medical history using all available FHIR data.${
+              patientId ? ` Their patient ID is ${patientId}.` : ""
+            }
 
-        Your response should:
-        - Identify important diagnoses, treatments, and lab results.
-        - Answer any templated or user-defined questions provided.
-        - Cite each FHIR resource type (e.g., Condition, Observation, MedicationRequest) you used to support your conclusions.
-        - Where possible, include direct references like resource IDs or filenames (e.g., DocumentReference/abc123).
+            Your response should:
+            - Identify important diagnoses, treatments, and lab results.
+            - Answer any templated or user-defined questions provided.
+            - Cite each FHIR resource type (e.g., Condition, Observation, MedicationRequest) you used to support your conclusions.
+            - Where possible, include direct references like resource IDs or filenames (e.g., DocumentReference/abc123).
 
-        Be concise, medically accurate, and clearly structure the findings.
+            Be concise, medically accurate, and clearly structure the findings.
 
-        ${questionBlock}
-          `.trim();
+            ${questionBlock}
+            `.trim();
       };
 
       // const prompt = () => `
       //   Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.
       // `;
 
-      console.log(prompt);
+      console.log(generatePrompt);
 
       setStatus("Analyzing entire patient context...");
-      const res = await analyzeItem("Patient Info", null, "gpt-4o", prompt);
+      const res = await analyzeItem(
+        "Patient Info",
+        null,
+        "gpt-4o",
+        generatePrompt
+      );
 
       setResults({ MCP: [{ result: res.result || res }] });
       setPages({ MCP: 1 });
