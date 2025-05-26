@@ -4,6 +4,8 @@ import { Card, CardContent } from "./ui/CardContent";
 import { Spinner } from "./ui/Spinner";
 import { useAIQueue } from "./hooks/useAIQueue";
 import { useAllPatientData } from "./hooks/useAllPatientData";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/redux/store";
 
 const PAGE_SIZE = 5;
 
@@ -11,6 +13,7 @@ export default function Dashboard() {
   const { analyzeItem } = useAIQueue();
   const { allResources, totalCount } = useAllPatientData();
   console.log("patient data fetched with new dashboard component");
+  const patientId = useSelector((state: RootState) => state.auth.patientId);
 
   const [status, setStatus] = useState("");
   const [results, setResults] = useState<Record<string, any[]>>({});
@@ -28,16 +31,15 @@ export default function Dashboard() {
     setStatus("Initializing...");
 
     try {
-      //   const prompt = () => `
-      // Analyze this patient's medical history using all available FHIR data. Their patient ID is ${patientId}. The FHIR resource is DocumentReference and the resource id is 0bb73ae5-6670-46df-80e1-e4613f30b032
-      // List any important diagnoses, treatments, and lab results.
-      // Include which files or resources you used to reach these conclusions, with references the user can follow.
-      // Note that you should already have access to the patient's data, as the model context protocol is configured, so you do not need to ask for any additional information.
-      // `;
-
       const prompt = () => `
-        Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.
+        Analyze this patient's medical history using all available FHIR data. Their patient ID is ${patientId}.
+        List any important diagnoses, treatments, and lab results.
+        Include which files or resources you used to reach these conclusions, with references the user can follow.
       `;
+
+      // const prompt = () => `
+      //   Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.
+      // `;
 
       console.log(prompt);
 
