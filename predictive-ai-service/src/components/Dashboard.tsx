@@ -97,10 +97,11 @@ export default function Dashboard() {
         generatePrompt
       );
 
-      setResults({ MCP: [{ result: res.result || res }] });
-      setPages({ MCP: 1 });
-      setExpanded({ MCP: true });
-      setProgressMap({ MCP: 100 });
+      const label = "Patient Summary";
+      setResults({ [label]: [{ result: res.result || res }] });
+      setPages({ [label]: 1 });
+      setExpanded({ [label]: true });
+      setProgressMap({ [label]: 100 });
     } catch (err: any) {
       const errorMessage = `Unexpected error: ${err.message || err}`;
       setError(errorMessage);
@@ -182,8 +183,19 @@ export default function Dashboard() {
                 )}
 
                 {currentPageEntries.map((entry, i) => (
-                  <Card key={i} className="my-2">
-                    <CardContent>
+                  <Card key={i} className="my-4 p-4">
+                    {/* Inline heading and progress for MCP (only show for first entry) */}
+                    {i === 0 && (
+                      <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-lg font-semibold">{type}</h2>
+                        <Progress
+                          value={progressMap[type] || 0}
+                          className="w-1/3 h-2"
+                        />
+                      </div>
+                    )}
+
+                    <CardContent className="px-0 pt-0">
                       {entry.result &&
                       typeof entry.result === "object" &&
                       !templatedQuestions.length &&

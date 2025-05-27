@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { HTMLAttributes, ReactNode } from "react";
 
 export const Card = ({
   children,
@@ -12,6 +12,12 @@ export const Card = ({
   </div>
 );
 
-export const CardContent = ({ children }: { children: ReactNode }) => (
-  <div className="card-body">{children}</div>
+export const CardContent = ({
+  children,
+  className = "",
+  ...props
+}: { children: ReactNode } & HTMLAttributes<HTMLDivElement>) => (
+  <div className={`card-body ${className}`} {...props}>
+    {children}
+  </div>
 );
