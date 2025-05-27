@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [pages, setPages] = useState<Record<string, number>>({});
-  const [isRunning, setIsRunning] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
   const cancelRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const templatedQuestions = useSelector(
@@ -61,7 +61,7 @@ export default function Dashboard() {
       //   Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.
       // `;
 
-      console.log(generatePrompt);
+      console.log("generated Promot is ", generatePrompt);
 
       setStatus("Analyzing entire patient context...");
       const res = await analyzeItem(
