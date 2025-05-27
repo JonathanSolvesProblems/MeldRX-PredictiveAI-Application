@@ -102,17 +102,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }    
     }
 
+    const updatedPrompt = prompt.slice(0, MAX_PROMPT_CHARS);
+
     const aiRequest = {
       model: modelName,
-      // systemMessage: `You are a clinical document analyst. Focus only on the medical and diagnostic content in the document or resource.
+      systemMessage: modelName === 'Llama-3.2-11B-Vision-Instruct' ? `You are a clinical document analyst. Focus only on the medical and diagnostic content in the document or resource.
       //   Do not discuss metadata (e.g., XML headers, encodings) or make generalizations.
       //   If answering specific questions, only respond using information found directly in the content. 
-      //   If a question has no answer in the content, respond with "No relevant information found."`,
-      systemMessage: "You are a healthcare AI assistant.",
-       chatMessages: [
+      //   If a question has no answer in the content, respond with "No relevant information found."` : "You are a healthcare AI assistant.",
+       chatMessages: modelName === 'Llama-3.2-11B-Vision-Instruct' ? updatedPrompt : [
           {
             role: "user",
-            message: prompt.slice(0, MAX_PROMPT_CHARS),
+            message: updatedPrompt,
           },
         ],
       base64BinaryData: base64Content || "",
