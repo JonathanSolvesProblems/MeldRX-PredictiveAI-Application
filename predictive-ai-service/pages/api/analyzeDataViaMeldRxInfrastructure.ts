@@ -109,7 +109,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       //   If answering specific questions, only respond using information found directly in the content. 
       //   If a question has no answer in the content, respond with "No relevant information found."`,
       systemMessage: "You are a healthcare AI assistant.",
-      chatMessage: prompt.slice(0, MAX_PROMPT_CHARS),
+       chatMessages: [
+          {
+            role: "user",
+            content: prompt.slice(0, MAX_PROMPT_CHARS),
+          },
+        ],
       base64BinaryData: base64Content || "",
       base64BinaryDataName: base64Content
         ? "attachment" + (contentType ? `.${contentType.split("/")[1]}` : "")
