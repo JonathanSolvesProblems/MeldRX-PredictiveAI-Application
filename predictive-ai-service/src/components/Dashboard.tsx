@@ -33,28 +33,60 @@ export default function Dashboard() {
     setStatus("Initializing...");
 
     try {
+      // const generatePrompt = (): string => {
+      //   const questionBlock = templatedQuestions?.length
+      //     ? `\n\nAdditional user-provided questions to guide your analysis:\n- ${templatedQuestions.join(
+      //         "\n- "
+      //       )}`
+      //     : "";
+
+      //   return `
+      //       Analyze the patient's complete medical history using all available FHIR data.${
+      //         patientId ? ` Their patient ID is ${patientId}.` : ""
+      //       }
+
+      //       Your response should:
+      //       - Identify important diagnoses, treatments, and lab results.
+      //       - Answer any templated or user-defined questions provided.
+      //       - Cite each FHIR resource type (e.g., Condition, Observation, MedicationRequest) you used to support your conclusions.
+      //       - Where possible, include direct references like resource IDs or filenames (e.g., DocumentReference/abc123).
+
+      //       Be concise, medically accurate, and clearly structure the findings.
+
+      //       ${questionBlock}
+      //       `.trim();
+      // };
+
       const generatePrompt = (): string => {
-        const questionBlock = templatedQuestions?.length
-          ? `\n\nAdditional user-provided questions to guide your analysis:\n- ${templatedQuestions.join(
-              "\n- "
-            )}`
-          : "";
+        const hasQuestions = templatedQuestions?.length > 0;
 
-        return `
-            Analyze the patient's complete medical history using all available FHIR data.${
-              patientId ? ` Their patient ID is ${patientId}.` : ""
-            }
+        if (hasQuestions) {
+          return `
+      Analyze the patient's complete medical history using all available FHIR data.${
+        patientId ? ` Their patient ID is ${patientId}.` : ""
+      }
 
-            Your response should:
-            - Identify important diagnoses, treatments, and lab results.
-            - Answer any templated or user-defined questions provided.
-            - Cite each FHIR resource type (e.g., Condition, Observation, MedicationRequest) you used to support your conclusions.
-            - Where possible, include direct references like resource IDs or filenames (e.g., DocumentReference/abc123).
+      Focus exclusively on answering the following user-provided questions. For each question:
+      - Restate the question as a heading.
+      - Provide a medically accurate and concise answer.
+      - Clearly cite the FHIR resources used to support your answer, using the format: ResourceType/resourceId (e.g., Condition/abc123 or DocumentReference/file456).
 
-            Be concise, medically accurate, and clearly structure the findings.
+      Questions:
+      - ${templatedQuestions.join("\n- ")}
+    `.trim();
+        } else {
+          return `
+      Analyze the patient's complete medical history using all available FHIR data.${
+        patientId ? ` Their patient ID is ${patientId}.` : ""
+      }
 
-            ${questionBlock}
-            `.trim();
+      Your response must:
+      - Identify and summarize key medical findings, including diagnoses, treatments, allergies, procedures, and lab results.
+      - Use structured formatting (e.g., headings and bullet points).
+      - For every finding, cite the FHIR resources used (type and resource ID or filename), such as: Observation/xyz456 or DocumentReference/file123.
+      - Be concise and medically accurate.
+    `.trim();
+        }
       };
 
       // const prompt = () => `
