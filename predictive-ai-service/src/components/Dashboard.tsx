@@ -33,60 +33,54 @@ export default function Dashboard() {
     setStatus("Initializing...");
 
     try {
-      // const generatePrompt = (): string => {
-      //   const questionBlock = templatedQuestions?.length
-      //     ? `\n\nAdditional user-provided questions to guide your analysis:\n- ${templatedQuestions.join(
-      //         "\n- "
-      //       )}`
-      //     : "";
-
-      //   return `
-      //       Analyze the patient's complete medical history using all available FHIR data.${
-      //         patientId ? ` Their patient ID is ${patientId}.` : ""
-      //       }
-
-      //       Your response should:
-      //       - Identify important diagnoses, treatments, and lab results.
-      //       - Answer any templated or user-defined questions provided.
-      //       - Cite each FHIR resource type (e.g., Condition, Observation, MedicationRequest) you used to support your conclusions.
-      //       - Where possible, include direct references like resource IDs or filenames (e.g., DocumentReference/abc123).
-
-      //       Be concise, medically accurate, and clearly structure the findings.
-
-      //       ${questionBlock}
-      //       `.trim();
-      // };
-
       const generatePrompt = (): string => {
         const hasQuestions = templatedQuestions?.length > 0;
 
         if (hasQuestions) {
           return `
-      Analyze the patient's complete medical history using all available FHIR data.${
-        patientId ? ` Their patient ID is ${patientId}.` : ""
-      }
+        Analyze the patient's complete medical history using all available FHIR data.${
+          patientId ? ` Their patient ID is ${patientId}.` : ""
+        }
 
-      Focus exclusively on answering the following user-provided questions. For each question:
-      - Restate the question as a heading.
-      - Provide a medically accurate and concise answer.
-      - If you did not find the answer, you can say "No relevant data found." for that question.
-      - Clearly cite the FHIR resources used to support your answer, using the format: ResourceType/resourceId (e.g., Condition/abc123 or DocumentReference/file456).
+        Focus exclusively on answering the following user-provided questions. For each question:
+        - Restate the question as a heading.
+        - Provide a medically accurate and concise answer.
+        - If you did not find the answer, say "No relevant data found."
+        - Clearly cite the FHIR resources used to support your answer (e.g., Condition/abc123).
 
-      Questions:
-      - ${templatedQuestions.join("\n- ")}
-    `.trim();
+        Questions:
+        - ${templatedQuestions.join("\n- ")}
+        `.trim();
         } else {
           return `
-      Analyze the patient's complete medical history using all available FHIR data.${
-        patientId ? ` Their patient ID is ${patientId}.` : ""
-      }
+        Analyze the patient's complete medical history using all available FHIR data.${
+          patientId ? ` Their patient ID is ${patientId}.` : ""
+        }
 
-      Your response must:
-      - Identify and summarize key medical findings, including diagnoses, treatments, allergies, procedures, and lab results.
-      - Use structured formatting (e.g., headings and bullet points).
-      - For every finding, cite the FHIR resources used (type and resource ID or filename), such as: Observation/xyz456 or DocumentReference/file123.
-      - Be concise and medically accurate.
-    `.trim();
+        Return your results in the following JSON format:
+
+        {
+          "riskScores": [
+            { "label": "Cardiovascular Risk", "score": "Moderate" },
+            { "label": "Diabetes Risk", "score": "Low" }
+          ],
+          "recommendedTreatments": [
+            { "treatment": "Metformin", "condition": "Type 2 Diabetes" },
+            { "treatment": "Lifestyle changes", "condition": "Obesity" }
+          ],
+          "preventiveMeasures": [
+            "Annual flu vaccination",
+            "Blood pressure check every 6 months"
+          ],
+          "sources": [
+            "Condition/abc123",
+            "Observation/def456",
+            "DocumentReference/file789"
+          ]
+        }
+
+        Be concise and medically accurate. Only use fields that are applicable. Do not invent data. If no data is available, use empty arrays.
+        `.trim();
         }
       };
 
@@ -191,11 +185,22 @@ export default function Dashboard() {
                 {currentPageEntries.map((entry, i) => (
                   <Card key={i} className="my-2">
                     <CardContent>
-                      <pre className="whitespace-pre-wrap text-sm">
-                        {entry.result
-                          ? JSON.stringify(entry.result, null, 2)
-                          : `❌ ${entry.error}`}
-                      </pre>
+                      {entry.result &&
+                      typeof entry.result === "object" &&
+                      !templatedQuestions.length &&
+                      (entry.result.riskScores ||
+                        entry.result.recommendedTreatments ||
+                        entry.result.preventiveMeasures) ? (
+                        RenderStructuredResult(entry.result)
+                      ) : (
+                        <pre className="whitespace-pre-wrap text-sm">
+                          {entry.result?.content
+                            ? entry.result.content
+                            : entry.result
+                            ? JSON.stringify(entry.result, null, 2)
+                            : `❌ ${entry.error}`}
+                        </pre>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
