@@ -8,6 +8,7 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import AnalysisPDF from "./AnalysisPDF";
 import { useAIQueue } from "./hooks/useAIQueue";
 import { QuestionUploader } from "./QuestionUploader";
+import { useAllPatientData } from "./hooks/useAllPatientData";
 
 type DocumentReference = {
   id: string;
@@ -19,6 +20,7 @@ type DocumentReference = {
 };
 
 export const DocumentWheel: React.FC = () => {
+  useAllPatientData(); // TODO: Refactor
   const documents = useSelector(
     (state: RootState) => state.documents.documents
   );

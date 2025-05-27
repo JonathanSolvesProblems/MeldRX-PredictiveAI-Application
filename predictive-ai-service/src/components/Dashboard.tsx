@@ -3,15 +3,14 @@ import { Progress } from "./ui/Progress";
 import { Card, CardContent } from "./ui/CardContent";
 import { Spinner } from "./ui/Spinner";
 import { useAIQueue } from "./hooks/useAIQueue";
-import { useAllPatientData } from "./hooks/useAllPatientData";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
+import { RenderStructuredResult } from "./RenderStructuredResult";
 
 const PAGE_SIZE = 5;
 
 export default function Dashboard() {
   const { analyzeItem } = useAIQueue();
-  const { allResources, totalCount } = useAllPatientData(); // TODO: May want to refactor, since this is fetching doc data too.
   console.log("patient data fetched with new dashboard component");
   const patientId = useSelector((state: RootState) => state.auth.patientId);
 
@@ -191,7 +190,7 @@ export default function Dashboard() {
                       (entry.result.riskScores ||
                         entry.result.recommendedTreatments ||
                         entry.result.preventiveMeasures) ? (
-                        RenderStructuredResult(entry.result)
+                        <RenderStructuredResult result={entry.result} />
                       ) : (
                         <pre className="whitespace-pre-wrap text-sm">
                           {entry.result?.content
