@@ -69,6 +69,7 @@ export default function Dashboard() {
       Focus exclusively on answering the following user-provided questions. For each question:
       - Restate the question as a heading.
       - Provide a medically accurate and concise answer.
+      - If you did not find the answer, you can say "No relevant data found." for that question.
       - Clearly cite the FHIR resources used to support your answer, using the format: ResourceType/resourceId (e.g., Condition/abc123 or DocumentReference/file456).
 
       Questions:
