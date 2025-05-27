@@ -112,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
        chatMessages: [
           {
             role: "user",
-            content: prompt.slice(0, MAX_PROMPT_CHARS),
+            message: prompt.slice(0, MAX_PROMPT_CHARS),
           },
         ],
       base64BinaryData: base64Content || "",
