@@ -33,7 +33,7 @@ export default function Dashboard() {
     setStatus("Initializing...");
 
     try {
-      const generatePrompt = (): string => {
+      const generatePrompt = (item: any): string => {
         const hasQuestions = templatedQuestions?.length > 0;
 
         if (hasQuestions) {
@@ -88,7 +88,7 @@ export default function Dashboard() {
       //   Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.
       // `;
 
-      console.log("generated Promot is ", generatePrompt());
+      console.log("generated Promot is ", generatePrompt("debug"));
 
       setStatus("Analyzing entire patient context...");
       const res = await analyzeItem(
