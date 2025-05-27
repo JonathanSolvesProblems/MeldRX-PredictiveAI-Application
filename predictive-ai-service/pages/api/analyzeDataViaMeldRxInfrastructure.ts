@@ -106,11 +106,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const aiRequest = {
       model: modelName,
-      systemMessage: modelName === 'Llama-3.2-11B-Vision-Instruct' ? `You are a clinical document analyst. Focus only on the medical and diagnostic content in the document or resource.
-      //   Do not discuss metadata (e.g., XML headers, encodings) or make generalizations.
-      //   If answering specific questions, only respond using information found directly in the content. 
-      //   If a question has no answer in the content, respond with "No relevant information found."` : "You are a healthcare AI assistant.",
-       chatMessages: modelName === 'Llama-3.2-11B-Vision-Instruct' ? updatedPrompt : [
+      // systemMessage: modelName === 'Llama-3.2-11B-Vision-Instruct' ? `You are a clinical document analyst. Focus only on the medical and diagnostic content in the document or resource.
+      // //   Do not discuss metadata (e.g., XML headers, encodings) or make generalizations.
+      // //   If answering specific questions, only respond using information found directly in the content. 
+      // //   If a question has no answer in the content, respond with "No relevant information found."` : "You are a healthcare AI assistant.",
+      //  chatMessages: modelName === 'Llama-3.2-11B-Vision-Instruct' ? updatedPrompt : [
+      //     {
+      //       role: "user",
+      //       message: updatedPrompt,
+      //     },
+      //   ],
+       systemMessage: "You are a healthcare AI assistant.",
+       chatMessages: [
           {
             role: "user",
             message: updatedPrompt,

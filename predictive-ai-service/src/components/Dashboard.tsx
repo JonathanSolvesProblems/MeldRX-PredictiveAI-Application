@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import { Progress } from "./ui/Progress";
-import { Card, CardContent } from "./ui/CardContent";
 import { Spinner } from "./ui/Spinner";
 import { useAIQueue } from "./hooks/useAIQueue";
 import { useSelector } from "react-redux";
@@ -138,7 +137,7 @@ export default function Dashboard() {
         <p className="text-md mb-2">
           Click the{" "}
           <span className="font-semibold">"Analyze Patient Data"</span> button
-          below to begin reviewing the patient's full medical history.
+          below to begin reviewing the patient's medical history.
         </p>
         <p className="text-md">
           <span className="font-semibold">Optional:</span> You can also import
@@ -197,28 +196,28 @@ export default function Dashboard() {
                       </div>
                     )} */}
 
-                    <div className="px-0 pt-0">
-                      {entry.result &&
-                      typeof entry.result === "object" &&
-                      !templatedQuestions.length &&
-                      (entry.result.riskScores ||
-                        entry.result.recommendedTreatments ||
-                        entry.result.preventiveMeasures) ? (
-                        <RenderStructuredResult result={entry.result} />
-                      ) : (
-                        <pre className="whitespace-pre-wrap text-sm">
-                          {entry.result?.content
-                            ? entry.result.content
-                            : entry.result
-                            ? JSON.stringify(entry.result, null, 2)
-                            : `❌ ${entry.error}`}
-                        </pre>
-                      )}
-                    </div>
+                    {/* <div className="px-0 pt-0"> */}
+                    {entry.result &&
+                    typeof entry.result === "object" &&
+                    !templatedQuestions.length &&
+                    (entry.result.riskScores ||
+                      entry.result.recommendedTreatments ||
+                      entry.result.preventiveMeasures) ? (
+                      <RenderStructuredResult result={entry.result} />
+                    ) : (
+                      <pre className="whitespace-pre-wrap text-sm">
+                        {entry.result?.content
+                          ? entry.result.content
+                          : entry.result
+                          ? JSON.stringify(entry.result, null, 2)
+                          : `❌ ${entry.error}`}
+                      </pre>
+                    )}
                   </div>
+                  // </div>
                 ))}
 
-                <div className="flex gap-2 mt-2 justify-end">
+                {/* <div className="flex gap-2 mt-2 justify-end">
                   <button
                     className="btn btn-sm btn-outline"
                     onClick={() => prevPage(type)}
@@ -233,7 +232,7 @@ export default function Dashboard() {
                   >
                     Next
                   </button>
-                </div>
+                </div> */}
               </>
             )}
           </div>
