@@ -5,6 +5,7 @@ import { useAIQueue } from "./hooks/useAIQueue";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { RenderStructuredResult } from "./RenderStructuredResult";
+import { RenderTemplatedQnA } from "./RenderTemplatedQnA";
 
 const PAGE_SIZE = 5;
 
@@ -74,7 +75,8 @@ export default function Dashboard() {
             "Condition/abc123",
             "Observation/def456",
             "DocumentReference/file789"
-          ]
+          ],
+          "summaryText": "A summary of the overall analysis of the patient's health."
         }
 
         Be concise and medically accurate. Only use fields that are applicable. Do not invent data. If no data is available, use empty arrays.
@@ -155,90 +157,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {Object.entries(results).map(([type, entries]) => {
-        const page = pages[type] || 1;
-        const start = (page - 1) * PAGE_SIZE;
-        const currentPageEntries = entries.slice(start, start + PAGE_SIZE);
-
-        return (
-          <div key={type} className="mb-4 border rounded p-3 shadow">
-            <div
-              className="flex justify-between items-center cursor-pointer"
-              onClick={() => toggleExpand(type)}
-            >
-              <h2 className="text-lg font-semibold">{type}</h2>
-              <Progress value={progressMap[type] || 0} className="w-1/2 h-2" />
-            </div>
-
-            {expanded[type] && (
-              <>
-                {entries.some((e) => e.error) && (
-                  <div className="mb-2 text-red-600 text-sm font-medium">
-                    ⚠️ {entries.filter((e) => e.error).length} error
-                    {entries.filter((e) => e.error).length > 1
-                      ? "s"
-                      : ""} in {type}
-                  </div>
-                )}
-
-                {currentPageEntries.map((entry, i) => (
-                  <div
-                    key={i}
-                    className="my-4 p-4 rounded-lg shadow bg-base-100"
-                  >
-                    {/* {i === 0 && (
-                      <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-lg font-semibold">{type}</h2>
-                        <Progress
-                          value={progressMap[type] || 0}
-                          className="w-1/3 h-2"
-                        />
-                      </div>
-                    )} */}
-
-                    {/* <div className="px-0 pt-0"> */}
-                    {entry.result &&
-                    typeof entry.result === "object" &&
-                    !templatedQuestions.length &&
-                    (entry.result.riskScores ||
-                      entry.result.recommendedTreatments ||
-                      entry.result.preventiveMeasures) ? (
-                      <RenderStructuredResult result={entry.result} />
-                    ) : (
-                      <pre className="whitespace-pre-wrap text-sm">
-                        {entry.result?.content
-                          ? entry.result.content
-                          : entry.result
-                          ? JSON.stringify(entry.result, null, 2)
-                          : `❌ ${entry.error}`}
-                      </pre>
-                    )}
-                  </div>
-                  // </div>
-                ))}
-
-                {/* <div className="flex gap-2 mt-2 justify-end">
-                  <button
-                    className="btn btn-sm btn-outline"
-                    onClick={() => prevPage(type)}
-                    disabled={page === 1}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    className="btn btn-sm btn-outline"
-                    onClick={() => nextPage(type)}
-                    disabled={page * PAGE_SIZE >= entries.length}
-                  >
-                    Next
-                  </button>
-                </div> */}
-              </>
-            )}
-          </div>
-        );
-      })}
-
       {isRunning && <Spinner />}
       {error && <p className="text-red-500">{error}</p>}
 
@@ -249,6 +167,41 @@ export default function Dashboard() {
           </button>
         </div>
       )}
+
+      {!isRunning &&
+        Object.entries(results).map(([type, entries]) => (
+          <div key={type} className="mb-4 border rounded p-3 shadow">
+            <h2 className="text-lg font-semibold mb-2">{type}</h2>
+
+            {entries.map((entry, i) => (
+              <div
+                key={i}
+                className="my-4 p-4 rounded-lg shadow bg-base-100 border"
+              >
+                {entry.result &&
+                typeof entry.result === "object" &&
+                !templatedQuestions.length &&
+                (entry.result.riskScores ||
+                  entry.result.recommendedTreatments ||
+                  entry.result.preventiveMeasures) ? (
+                  <RenderStructuredResult result={entry.result} />
+                ) : templatedQuestions.length ? (
+                  <RenderTemplatedQnA
+                    content={entry.result?.content || entry.result}
+                  />
+                ) : (
+                  <pre className="whitespace-pre-wrap text-sm">
+                    {entry.result?.content
+                      ? entry.result.content
+                      : entry.result
+                      ? JSON.stringify(entry.result, null, 2)
+                      : `❌ ${entry.error}`}
+                  </pre>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
     </div>
   );
 }
