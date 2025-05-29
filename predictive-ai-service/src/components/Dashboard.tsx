@@ -76,15 +76,14 @@ export default function Dashboard() {
             "Observation/def456",
             "DocumentReference/file789"
           ],
-          "summaryText": "A summary of the overall analysis of the patient's health."
+          "summaryText": "A summary of the overall analysis of the patient's health.",
+          "accuracy": [0-1], // A value between 0 and 1 representing the model's confidence in its response, where 1 is highly accurate.
         }
 
         Be concise and medically accurate. Only use fields that are applicable. Do not invent data. If no data is available, use empty arrays.
         `.trim();
         }
       };
-
-      // "accuracy": [0-1], // A value between 0 and 1 representing the model's confidence in its response, where 1 is highly accurate.
 
       // const prompt = () => `
       //   Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.
