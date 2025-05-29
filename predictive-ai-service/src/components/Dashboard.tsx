@@ -56,7 +56,7 @@ export default function Dashboard() {
           patientId ? ` Their patient ID is ${patientId}.` : ""
         }
 
-        Return your results in the following JSON format:
+        Return your results **strictly in JSON format**. Do not add any explanation or commentary.
 
         {
           "riskScores": [
@@ -84,6 +84,8 @@ export default function Dashboard() {
         }
       };
 
+      // "accuracy": [0-1], // A value between 0 and 1 representing the model's confidence in its response, where 1 is highly accurate.
+
       // const prompt = () => `
       //   Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.
       // `;
@@ -101,7 +103,27 @@ export default function Dashboard() {
       console.log("RES IS ", JSON.stringify(res, null, 2));
 
       const label = "Patient Summary";
-      setResults({ [label]: [{ result: res.result || res }] });
+      const hasQuestions = templatedQuestions?.length > 0;
+      let extractedResult = res.result || res;
+
+      if (!hasQuestions) {
+        try {
+          // Try to extract JSON if it's embedded in a string
+          if (typeof extractedResult === "string") {
+            const jsonMatch = extractedResult.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              extractedResult = JSON.parse(jsonMatch[0]);
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to parse JSON output:", e);
+          setError("The AI did not return valid JSON.");
+          return;
+        }
+      }
+
+      setResults({ [label]: [{ result: extractedResult }] });
+
       setPages({ [label]: 1 });
       setExpanded({ [label]: true });
       setProgressMap({ [label]: 100 });

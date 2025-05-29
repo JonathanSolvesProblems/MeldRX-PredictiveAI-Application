@@ -166,17 +166,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     res.status(200).json({ result });    
 
-    // // FOR AZURE
-    // const json = await aiResponse.json();
-
-    // if (!aiResponse.ok) {
-    //   console.error(`❌ AI Error Response:`, json);
-    //   throw new Error(`AI request failed: ${aiResponse.status} ${aiResponse.statusText} - ${JSON.stringify(json)}`);
-    // }
-
-    // res.status(200).json({ result: json });
-    // // 
-
   } catch (error: any) {
     console.error(`❌ Handler error:`, error);
     res.status(500).json({ error: error.message || "Unknown error" });
