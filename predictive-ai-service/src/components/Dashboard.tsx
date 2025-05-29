@@ -98,6 +98,8 @@ export default function Dashboard() {
         generatePrompt
       );
 
+      console.log("RES IS ", JSON.stringify(res, null, 2));
+
       const label = "Patient Summary";
       setResults({ [label]: [{ result: res.result || res }] });
       setPages({ [label]: 1 });
