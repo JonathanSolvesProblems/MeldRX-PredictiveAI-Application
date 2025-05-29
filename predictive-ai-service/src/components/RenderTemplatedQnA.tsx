@@ -20,6 +20,14 @@ export const RenderTemplatedQnA = ({ content }: { content: string }) => {
       return;
     }
 
+    if (typeof content !== "string") {
+      console.error(
+        "RenderTemplatedQnA expected 'content' to be a string but received:",
+        content
+      );
+      return <div className="text-error">Invalid content format</div>;
+    }
+
     await fetchFHIRResource({
       resourceType,
       patientId,

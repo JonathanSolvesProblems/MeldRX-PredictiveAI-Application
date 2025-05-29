@@ -56,7 +56,7 @@ export default function Dashboard() {
           patientId ? ` Their patient ID is ${patientId}.` : ""
         }
 
-        Return your results **strictly in JSON format**. Do not add any explanation or commentary.
+        Return your results in JSON format:
 
         {
           "riskScores": [
