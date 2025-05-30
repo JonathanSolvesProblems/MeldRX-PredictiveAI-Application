@@ -44,8 +44,13 @@ export const QuestionUploader: React.FC = () => {
     }
   };
 
+  const handleClearQuestions = () => {
+    dispatch(setQuestions([]));
+    alert("Templated questions cleared!");
+  };
+
   return (
-    <div className="flex gap-4 items-center">
+    <div className="flex flex-wrap gap-4 items-center">
       <label className="btn btn-outline btn-sm">
         📥 Import Questions
         <input
@@ -56,9 +61,17 @@ export const QuestionUploader: React.FC = () => {
         />
       </label>
       {questions.length > 0 && (
-        <span className="text-success text-sm">
-          ✓ {questions.length} questions loaded
-        </span>
+        <>
+          <span className="text-success text-sm">
+            ✓ {questions.length} questions loaded
+          </span>
+          <button
+            className="btn btn-outline btn-error btn-sm"
+            onClick={handleClearQuestions}
+          >
+            ✖ Clear Questions
+          </button>
+        </>
       )}
     </div>
   );
