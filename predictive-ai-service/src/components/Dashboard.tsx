@@ -237,7 +237,6 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
                 {entry.result &&
                 typeof entry.result === "object" &&
                 !Array.isArray(entry.result) &&
-                !templatedQuestions.length &&
                 ("riskScores" in entry.result ||
                   "recommendedTreatments" in entry.result ||
                   "preventiveMeasures" in entry.result ||
