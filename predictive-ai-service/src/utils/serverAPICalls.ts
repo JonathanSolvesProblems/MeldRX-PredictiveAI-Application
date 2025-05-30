@@ -58,6 +58,7 @@ export async function updateLastAnalyzed(patientId: string, token: string, analy
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
        body: JSON.stringify({
         analysisData: analysisData ?? null, // Send null if not provided
