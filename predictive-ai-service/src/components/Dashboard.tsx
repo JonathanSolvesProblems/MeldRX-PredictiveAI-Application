@@ -201,13 +201,12 @@ export default function Dashboard() {
                 key={i}
                 className="my-4 p-4 rounded-lg shadow bg-base-100 border"
               >
-                {entry.result &&
-                typeof entry.result === "object" &&
-                !Array.isArray(entry.result) &&
-                !templatedQuestions.length &&
-                (Array.isArray(entry.result.riskScores) ||
+                {/* (Array.isArray(entry.result.riskScores) ||
                   Array.isArray(entry.result.recommendedTreatments) ||
-                  Array.isArray(entry.result.preventiveMeasures)) ? (
+                  Array.isArray(entry.result.preventiveMeasures)) && 
+                typeof entry.result === "object" &&
+                !Array.isArray(entry.result) && */}
+                {entry.result && !templatedQuestions.length ? (
                   <RenderStructuredResult result={entry.result} />
                 ) : templatedQuestions.length ? (
                   <RenderTemplatedQnA
