@@ -255,7 +255,13 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
                   {isStructured ? (
                     <RenderStructuredResult result={res} />
                   ) : templatedQuestions.length ? (
-                    <RenderTemplatedQnA content={res?.content || res} />
+                    typeof (res?.content || res) === "string" ? (
+                      <RenderTemplatedQnA content={res?.content || res} />
+                    ) : (
+                      <p className="text-red-500">
+                        ❌ Unable to render Q&A – invalid content format.
+                      </p>
+                    )
                   ) : (
                     <pre className="whitespace-pre-wrap text-sm">
                       {res?.content

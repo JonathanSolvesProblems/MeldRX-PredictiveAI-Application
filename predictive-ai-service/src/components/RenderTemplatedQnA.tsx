@@ -11,6 +11,14 @@ export const RenderTemplatedQnA = ({ content }: { content: string }) => {
   const [fetched, setFetched] = useState<Record<string, any>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
+  if (typeof content !== "string") {
+    return (
+      <div className="text-red-500">
+        ❌ Error: Invalid content passed to Q&A component.
+      </div>
+    );
+  }
+
   const extractResources = (text: string) =>
     [...text.matchAll(/([A-Za-z]+\/[a-z0-9\-]+)/g)].map((m) => m[1]);
 
