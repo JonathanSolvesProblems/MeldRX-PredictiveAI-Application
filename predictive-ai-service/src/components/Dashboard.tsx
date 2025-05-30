@@ -105,6 +105,21 @@ export default function Dashboard() {
       const hasQuestions = templatedQuestions?.length > 0;
       let extractedResult = res.result || res;
 
+      if (
+        extractedResult &&
+        typeof extractedResult.content === "string" &&
+        extractedResult.content.includes("{")
+      ) {
+        const match = extractedResult.content.match(/\{[\s\S]*\}/);
+        if (match) {
+          try {
+            extractedResult = JSON.parse(match[0]);
+          } catch (e) {
+            console.warn("Failed to parse structured JSON from content", e);
+          }
+        }
+      }
+
       if (!hasQuestions) {
         try {
           // Try to extract JSON if it's embedded in a string
@@ -201,12 +216,13 @@ export default function Dashboard() {
                 key={i}
                 className="my-4 p-4 rounded-lg shadow bg-base-100 border"
               >
-                {/* (Array.isArray(entry.result.riskScores) ||
+                {entry.result &&
+                (Array.isArray(entry.result.riskScores) ||
                   Array.isArray(entry.result.recommendedTreatments) ||
-                  Array.isArray(entry.result.preventiveMeasures)) && 
+                  Array.isArray(entry.result.preventiveMeasures)) &&
                 typeof entry.result === "object" &&
-                !Array.isArray(entry.result) && */}
-                {entry.result && !templatedQuestions.length ? (
+                !Array.isArray(entry.result) &&
+                !templatedQuestions.length ? (
                   <RenderStructuredResult result={entry.result} />
                 ) : templatedQuestions.length ? (
                   <RenderTemplatedQnA
