@@ -12,7 +12,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: "Invalid request parameters" });
   }
 
-  const observation = {
+  const baseUrl = `https://app.meldrx.com/api/fhir/${process.env.NEXT_PUBLIC_APP_ID}`;
+
+  const observationBase = {
     resourceType: "Observation",
     status: "final",
     code: {
@@ -32,27 +34,70 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   };
 
   try {
-    const response = await fetch(
-      `https://app.meldrx.com/api/fhir/${process.env.NEXT_PUBLIC_APP_ID}/Observation`,
+    // Checks for an existing observation with analysis.
+    const searchResponse = await fetch(
+      `${baseUrl}/Observation?subject=Patient/${patientId}&code=http://example.org/fhir/CodeSystem/ai-analysis|ai-last-analysis`,
       {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/fhir+json",
+        },
+      }
+    );
+
+    if (!searchResponse.ok) {
+      const text = await searchResponse.text();
+      console.error("FHIR search failed:", searchResponse.status, text);
+      return res.status(500).json({ message: "Failed to search for existing observation" });
+    }
+
+    const searchResult = await searchResponse.json();
+
+    const existingObservation = searchResult.entry?.[0]?.resource;
+
+    if (existingObservation?.id) {
+      // Update the existing Observation
+      const updateResponse = await fetch(`${baseUrl}/Observation/${existingObservation.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/fhir+json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...existingObservation,
+          effectiveDateTime: date,
+          valueDateTime: date,
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        const text = await updateResponse.text();
+        console.error("FHIR update failed:", updateResponse.status, text);
+        return res.status(500).json({ message: "Failed to update observation in FHIR" });
+      }
+
+      return res.status(200).json({ message: "Observation updated in FHIR" });
+    } else {
+      // Otherwise create a new Observation
+      const createResponse = await fetch(`${baseUrl}/Observation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/fhir+json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(observation),
+        body: JSON.stringify(observationBase),
+      });
+
+      if (!createResponse.ok) {
+        const text = await createResponse.text();
+        console.error("FHIR create failed:", createResponse.status, text);
+        return res.status(500).json({ message: "Failed to create new observation in FHIR" });
       }
-    );
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("FHIR write failed:", response.status, text);
-      return res.status(500).json({ message: "Failed to write observation to FHIR" });
+      return res.status(200).json({ message: "New observation created in FHIR" });
     }
-
-    return res.status(200).json({ message: "Analysis date saved to FHIR" });
   } catch (err: any) {
-    console.error("Unexpected error writing to FHIR:", err);
+    console.error("Unexpected error handling FHIR observation:", err);
     return res.status(500).json({ message: "Server error", error: err.message });
   }
 }
