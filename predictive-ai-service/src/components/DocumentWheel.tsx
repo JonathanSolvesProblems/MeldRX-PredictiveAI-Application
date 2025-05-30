@@ -20,7 +20,7 @@ type DocumentReference = {
 };
 
 export const DocumentWheel: React.FC = () => {
-  useAllPatientData(); // TODO: Refactor
+  useAllPatientData();
   const documents = useSelector(
     (state: RootState) => state.documents.documents
   );

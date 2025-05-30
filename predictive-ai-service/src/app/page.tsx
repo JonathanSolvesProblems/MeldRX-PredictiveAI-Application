@@ -17,6 +17,9 @@ export default function Home() {
   const patientId = useSelector((state: any) => state.auth.patientId);
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [patientName, setPatientName] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"dashboard" | "documents">(
+    "dashboard"
+  );
 
   useEffect(() => {
     // console.log("Redux User:", user);
@@ -84,18 +87,31 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-base-100 p-6">
-      {/* <AnalyzeDocumentsButton /> */}
       <header className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-semibold text-blue-700">
           Welcome to the Predictive AI Healthcare App
         </h1>
       </header>
 
-      <div className="p-4">
-        <h1 className="text-xl font-bold mb-4">Patient Documents</h1>
-        <DocumentWheel />
+      {/* DaisyUI Tabs */}
+      <div role="tablist" className="tabs tabs-bordered mb-4">
+        <a
+          role="tab"
+          className={`tab ${activeTab === "dashboard" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("dashboard")}
+        >
+          Dashboard
+        </a>
+        <a
+          role="tab"
+          className={`tab ${activeTab === "documents" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("documents")}
+        >
+          Documents
+        </a>
       </div>
 
+      {/* Tab Panels */}
       {loading ? (
         <div className="flex justify-center items-center">
           <div className="loader loader-spinner"></div>
@@ -104,17 +120,21 @@ export default function Home() {
       ) : user && token ? (
         <>
           {patientName ? (
-            <h2 className="text-4xl font-bold text-center text-indigo-600 mt-10">
+            <h2 className="text-4xl font-bold text-center text-indigo-600 mt-4 mb-4">
               {patientName}'s Insights
             </h2>
           ) : (
-            <p className="text-center text-xl">Loading Patient Name...</p>
+            <p className="text-center text-xl mb-4">Loading Patient Name...</p>
           )}
 
-          {/* <DebugData /> */}
-          {/* <Dashboard /> */}
-          <Dashboard />
-          {/* <DashboardBackup /> */}
+          {activeTab === "dashboard" && <Dashboard />}
+
+          {activeTab === "documents" && (
+            <div className="p-4">
+              <h1 className="text-xl font-bold mb-4">Patient Documents</h1>
+              <DocumentWheel />
+            </div>
+          )}
         </>
       ) : (
         <p className="text-center text-xl text-red-500">Not authenticated</p>

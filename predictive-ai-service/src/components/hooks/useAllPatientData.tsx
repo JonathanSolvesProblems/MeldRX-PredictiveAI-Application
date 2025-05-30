@@ -84,7 +84,8 @@ export const useAllPatientData = (options: UseAllPatientDataOptions = {}) => {
     setLoading(true);
     setErrors({});
 
-    const resourceFetchers = (Object.keys(resourceMap) as ResourceType[]).map(
+    const resourceFetchers = (["DocumentReference"] as ResourceType[]).map(
+      // const resourceFetchers = (Object.keys(resourceMap) as ResourceType[]).map( // With MCP, I only need to fetch DocumentReference for now
       async (resourceType) => {
         const config = options.resourceConfigs?.[resourceType];
         try {
