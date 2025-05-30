@@ -7,6 +7,7 @@ import { handleCallback, handleLaunch } from "../utils/auth"; // Assuming these 
 import axios from "axios";
 import { DocumentWheel } from "@/components/DocumentWheel";
 import Dashboard from "@/components/Dashboard";
+import { QuestionUploader } from "@/components/QuestionUploader";
 // import AnalyzeDocumentsButton from "@/components/AnalyzeDocumentsButton";
 // import Dashboard from "@/components/Dashboard";
 
@@ -120,9 +121,14 @@ export default function Home() {
       ) : user && token ? (
         <>
           {patientName ? (
-            <h2 className="text-4xl font-bold text-center text-indigo-600 mt-4 mb-4">
-              {patientName}'s Insights
-            </h2>
+            <>
+              <h2 className="text-4xl font-bold text-center text-indigo-600 mt-4 mb-4">
+                {patientName}'s Insights
+              </h2>
+              <div className="flex justify-center mb-4">
+                <QuestionUploader />
+              </div>
+            </>
           ) : (
             <p className="text-center text-xl mb-4">Loading Patient Name...</p>
           )}

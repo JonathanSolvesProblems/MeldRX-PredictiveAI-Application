@@ -7,7 +7,6 @@ import { addAnalysis } from "@/app/redux/analysisSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import AnalysisPDF from "./AnalysisPDF";
 import { useAIQueue } from "./hooks/useAIQueue";
-import { QuestionUploader } from "./QuestionUploader";
 import { useAllPatientData } from "./hooks/useAllPatientData";
 
 type DocumentReference = {
@@ -151,7 +150,6 @@ export const DocumentWheel: React.FC = () => {
 
   return (
     <div className="overflow-x-auto py-4 space-y-4">
-      <QuestionUploader />
       <div className="flex space-x-4">
         {documents.map((doc) => {
           const attachment = doc.content?.[0]?.attachment;
