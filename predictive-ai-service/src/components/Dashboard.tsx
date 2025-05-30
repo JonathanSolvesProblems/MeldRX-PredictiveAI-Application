@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Progress } from "./ui/Progress";
 import { Spinner } from "./ui/Spinner";
 import { useAIQueue } from "./hooks/useAIQueue";
@@ -183,6 +183,10 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
     setIsRunning(false);
   };
 
+  useEffect(() => {
+    console.log("Results updated:", results);
+  }, [results]);
+
   return (
     <div className="p-6 max-h-screen overflow-y-auto">
       <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
@@ -231,12 +235,13 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
                 className="my-4 p-4 rounded-lg shadow bg-base-100 border"
               >
                 {entry.result &&
-                (Array.isArray(entry.result.riskScores) ||
-                  Array.isArray(entry.result.recommendedTreatments) ||
-                  Array.isArray(entry.result.preventiveMeasures)) &&
                 typeof entry.result === "object" &&
                 !Array.isArray(entry.result) &&
-                !templatedQuestions.length ? (
+                !templatedQuestions.length &&
+                ("riskScores" in entry.result ||
+                  "recommendedTreatments" in entry.result ||
+                  "preventiveMeasures" in entry.result ||
+                  "summaryText" in entry.result) ? (
                   <RenderStructuredResult result={entry.result} />
                 ) : templatedQuestions.length ? (
                   <RenderTemplatedQnA
