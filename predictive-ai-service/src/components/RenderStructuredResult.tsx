@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export function RenderStructuredResult(result: any) {
+export function RenderStructuredResult({ result }: { result: any }) {
   const [fetchedSources, setFetchedSources] = useState<Record<string, any>>({});
   const token = useSelector((state: RootState) => state.auth.token);
   const patientId = useSelector((state: RootState) => state.auth.patientId);
