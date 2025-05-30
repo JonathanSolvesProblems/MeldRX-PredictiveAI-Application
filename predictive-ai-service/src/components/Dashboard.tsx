@@ -77,7 +77,8 @@ Return your results in JSON format:
     "DocumentReference/file789"
   ],
   "summaryText": "A summary of the overall analysis of the patient's health.",
-  "accuracy": 0.9
+  "accuracy": 0.9,
+  accuracyExplanation: "The AI's confidence in the analysis based on available data."
 }
 
 Be concise and medically accurate. Only use fields that are applicable. Do not invent data. If no data is available, use empty arrays.
