@@ -105,36 +105,30 @@ export default function Dashboard() {
       const hasQuestions = templatedQuestions?.length > 0;
       let extractedResult = res.result || res;
 
-      if (
-        extractedResult &&
-        typeof extractedResult.content === "string" &&
-        extractedResult.content.includes("{")
-      ) {
-        const match = extractedResult.content.match(/\{[\s\S]*\}/);
-        if (match) {
-          try {
-            extractedResult = JSON.parse(match[0]);
-          } catch (e) {
-            console.warn("Failed to parse structured JSON from content", e);
-          }
-        }
-      }
-
       if (!hasQuestions) {
         try {
-          // Try to extract JSON if it's embedded in a string
-          if (typeof extractedResult === "string") {
-            const jsonMatch = extractedResult.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              extractedResult = JSON.parse(jsonMatch[0]);
+          if (
+            extractedResult &&
+              typeof extractedResult.content === "string"
+            ) {
+              let content = extractedResult.content.trim();
+
+            // Remove Markdown code block formatting if present
+            if (content.startsWith("```json")) {
+              content = content.replace(/^```json/, "").replace(/```$/, "").trim();
+            } else if (content.startsWith("```")) {
+              content = content.replace(/^```/, "").replace(/```$/, "").trim();
             }
-          }
+        try {
+          extractedResult = JSON.parse(content);
         } catch (e) {
-          console.warn("Failed to parse JSON output:", e);
+          console.warn("Failed to parse JSON from cleaned content:", e);
           setError("The AI did not return valid JSON.");
           return;
         }
       }
+
+      console.log("Extracted result:", extractedResult);
 
       setResults({ [label]: [{ result: extractedResult }] });
 
