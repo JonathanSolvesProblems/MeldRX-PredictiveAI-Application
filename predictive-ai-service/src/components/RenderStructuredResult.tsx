@@ -81,7 +81,7 @@ export function RenderStructuredResult({ result }: { result: any }) {
     <div className="space-y-6">
       <div className="flex justify-end">
         <PDFDownloadLink
-          document={<AnalysisPDF content={result} />}
+          document={<AnalysisPDF content={JSON.stringify(result, null, 2)} />}
           fileName="analysis-summary.pdf"
           className="btn btn-outline btn-sm"
         >
@@ -135,7 +135,7 @@ export function RenderStructuredResult({ result }: { result: any }) {
 
         {riskData.length > 0 && (
           <div>
-            <h4 className="font-semibold mb-2 text-white">Risk Scores</h4>
+            <h4 className="font-semibold mb-2 text-black">Risk Scores</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={riskData}>
                 <XAxis
