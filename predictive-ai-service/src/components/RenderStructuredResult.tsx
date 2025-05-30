@@ -1,7 +1,7 @@
 import { RootState } from "@/app/redux/store";
 import { fetchFHIRResource } from "@/utils/fhirAPICalls";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   ResponsiveContainer,
@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import AnalysisPDF from "./AnalysisPDF";
 import { formatResultForPDF } from "@/utils/helper";
+import { updateLastAnalyzed } from "@/utils/serverAPICalls";
 
 export function RenderStructuredResult({ result }: { result: any }) {
   const [fetchedSources, setFetchedSources] = useState<Record<string, any>>({});
@@ -77,6 +78,13 @@ export function RenderStructuredResult({ result }: { result: any }) {
     if (score === 2) return "#facc15";
     return "#ef4444";
   };
+
+  useEffect(() => {
+    if (patientId && token && result) {
+      const analysisString = JSON.stringify(result);
+      updateLastAnalyzed(patientId, token, analysisString);
+    }
+  }, [patientId, token, result]);
 
   return (
     <div className="space-y-6">

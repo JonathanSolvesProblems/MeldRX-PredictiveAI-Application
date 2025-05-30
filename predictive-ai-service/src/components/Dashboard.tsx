@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { RenderStructuredResult } from "./RenderStructuredResult";
 import { RenderTemplatedQnA } from "./RenderTemplatedQnA";
+import { fetchLastAnalyzed } from "@/utils/fhirAPICalls";
 
 const PAGE_SIZE = 5;
 
@@ -25,6 +26,32 @@ export default function Dashboard() {
   const templatedQuestions = useSelector(
     (state: RootState) => state.questions.questions
   );
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  useEffect(() => {
+    const loadLastAnalysis = async () => {
+      if (!patientId || !token) return;
+
+      const { content, structured } = await fetchLastAnalyzed(token, patientId);
+
+      if (!content && !structured) return;
+
+      const label = "Patient Summary";
+
+      if (structured) {
+        setResults({ [label]: [{ result: structured }] });
+      } else {
+        setResults({ [label]: [{ result: { content } }] });
+      }
+
+      setPages({ [label]: 1 });
+      setExpanded({ [label]: true });
+      setProgressMap({ [label]: 100 });
+      setStatus("✅ Loaded previous analysis.");
+    };
+
+    loadLastAnalysis();
+  }, [patientId, token]);
 
   const analyzeData = async () => {
     cancelRef.current = false;

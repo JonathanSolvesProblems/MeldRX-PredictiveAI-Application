@@ -28,14 +28,14 @@ export async function fetchAIResponse(
 
     const data = await res.json();
 
-    if (!patientId) {
-       patientId = item?.subject?.reference?.split("/")[1] ?? null;
-    }
+    // if (!patientId) {
+    //    patientId = item?.subject?.reference?.split("/")[1] ?? null;
+    // }
  
-    console.log("Patient ID:", patientId);
-    if (patientId && data?.result) {
-      updateLastAnalyzed(patientId, token);
-    }
+    // console.log("Patient ID:", patientId);
+    // if (patientId && data?.result) {
+    //   updateLastAnalyzed(patientId, token);
+    // }
 
     return { result: data.result || data };
   } catch (err: any) {
@@ -51,7 +51,7 @@ export async function fetchAIResponse(
   }
 }
 
-async function updateLastAnalyzed(patientId: string, token: string) {
+export async function updateLastAnalyzed(patientId: string, token: string, analysisData?: string) {
   const today = new Date().toISOString().split("T")[0];
   try {
     const res = await fetch(`/api/updateLastAnalyzed?patientId=${patientId}&date=${today}`, {
@@ -59,6 +59,9 @@ async function updateLastAnalyzed(patientId: string, token: string) {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+       body: JSON.stringify({
+        analysisData: analysisData ?? null, // Send null if not provided
+      }),
     });
     if (!res.ok) throw new Error(await res.text());
     console.log(`✅ Last analyzed updated for ${patientId}`);

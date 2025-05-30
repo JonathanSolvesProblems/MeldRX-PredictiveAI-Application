@@ -6,6 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { patientId, date } = req.query;
+  const { analysisData } = req.body;
   const token = req.headers.authorization?.replace("Bearer ", "") ?? req.body.token;
 
   if (typeof patientId !== "string" || typeof date !== "string" || !token) {
@@ -67,6 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ...existingObservation,
           effectiveDateTime: date,
           valueDateTime: date,
+          valueString: analysisData ?? existingObservation.valueString,
         }),
       });
 
@@ -79,13 +81,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ message: "Observation updated in FHIR" });
     } else {
       // Otherwise create a new Observation
+      const createObservation = {
+        ...observationBase,
+        ...(analysisData ? { valueString: analysisData } : {}), // Only include if provided
+      };
+
       const createResponse = await fetch(`${baseUrl}/Observation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/fhir+json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(observationBase),
+        body: JSON.stringify(createObservation),
       });
 
       if (!createResponse.ok) {

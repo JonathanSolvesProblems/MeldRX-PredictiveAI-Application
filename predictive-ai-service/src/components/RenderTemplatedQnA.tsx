@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { fetchFHIRResource } from "@/utils/fhirAPICalls";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import AnalysisPDF from "./AnalysisPDF";
+import { updateLastAnalyzed } from "@/utils/serverAPICalls";
 
 export const RenderTemplatedQnA = ({ content }: { content: string }) => {
   const token = useSelector((state: RootState) => state.auth.token);
@@ -60,6 +61,12 @@ export const RenderTemplatedQnA = ({ content }: { content: string }) => {
   };
 
   const qaList = parseQA(content);
+
+  useEffect(() => {
+    if (patientId && token && typeof content === "string") {
+      updateLastAnalyzed(patientId, token, content);
+    }
+  }, [patientId, token, content]);
 
   return (
     <div className="space-y-6">

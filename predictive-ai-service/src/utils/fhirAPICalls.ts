@@ -83,3 +83,39 @@ export const fetchDocumentContent = async (doc: any, token: string) => {
 
   return { content, contentType };
 };
+
+export const fetchLastAnalyzed = async (
+  token: string,
+  patientId: string
+): Promise<{ content: string | null; structured: any | null }> => {
+  if (!token || !patientId) return { content: null, structured: null };
+
+  const url = `https://app.meldrx.com/api/fhir/${process.env.NEXT_PUBLIC_APP_ID}/Observation?patient=${patientId}&code=last-analysis&_sort=-date&_count=1`;
+
+  try {
+    const res = await axios.get(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const entry = res.data.entry?.[0]?.resource;
+    if (!entry) return { content: null, structured: null };
+
+    const valueString = entry.valueString;
+    const attachment = entry.valueAttachment?.data;
+
+    if (attachment) {
+      try {
+        const decoded = atob(attachment);
+        return { structured: JSON.parse(decoded), content: null };
+      } catch (e) {
+        console.warn("❌ Failed to parse attachment JSON:", e);
+        return { content: null, structured: null };
+      }
+    }
+
+    return { content: valueString || null, structured: null };
+  } catch (err) {
+    console.error("❌ Error fetching last analysis observation:", err);
+    return { content: null, structured: null };
+  }
+};
