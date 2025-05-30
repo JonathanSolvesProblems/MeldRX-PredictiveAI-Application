@@ -203,10 +203,11 @@ export default function Dashboard() {
               >
                 {entry.result &&
                 typeof entry.result === "object" &&
+                !Array.isArray(entry.result) &&
                 !templatedQuestions.length &&
-                (entry.result.riskScores ||
-                  entry.result.recommendedTreatments ||
-                  entry.result.preventiveMeasures) ? (
+                (Array.isArray(entry.result.riskScores) ||
+                  Array.isArray(entry.result.recommendedTreatments) ||
+                  Array.isArray(entry.result.preventiveMeasures)) ? (
                   <RenderStructuredResult result={entry.result} />
                 ) : templatedQuestions.length ? (
                   <RenderTemplatedQnA
