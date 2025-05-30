@@ -95,7 +95,7 @@ export default function Dashboard() {
       const res = await analyzeItem(
         "Patient Info",
         null,
-        "DeepSeek-V3-0324",
+        "gpt-4o",
         generatePrompt
       );
 
