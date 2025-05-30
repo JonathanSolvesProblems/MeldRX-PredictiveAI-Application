@@ -15,6 +15,7 @@ import {
   Tooltip,
 } from "recharts";
 import AnalysisPDF from "./AnalysisPDF";
+import { formatResultForPDF } from "@/utils/helper";
 
 export function RenderStructuredResult({ result }: { result: any }) {
   const [fetchedSources, setFetchedSources] = useState<Record<string, any>>({});
@@ -81,7 +82,7 @@ export function RenderStructuredResult({ result }: { result: any }) {
     <div className="space-y-6">
       <div className="flex justify-end">
         <PDFDownloadLink
-          document={<AnalysisPDF content={JSON.stringify(result, null, 2)} />}
+          document={<AnalysisPDF content={formatResultForPDF(result)} />}
           fileName="analysis-summary.pdf"
           className="btn btn-outline btn-sm"
         >
@@ -135,18 +136,18 @@ export function RenderStructuredResult({ result }: { result: any }) {
 
         {riskData.length > 0 && (
           <div>
-            <h4 className="font-semibold mb-2 text-black">Risk Scores</h4>
+            <h4 className="font-semibold mb-2 text-white">Risk Scores</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={riskData}>
                 <XAxis
                   dataKey="name"
-                  tick={{ fill: "black" }}
+                  tick={{ fill: "white" }}
                   axisLine={{ stroke: "#ccc" }}
                 />
                 <YAxis
                   ticks={[1, 2, 3]}
                   domain={[0, 3]}
-                  tick={{ fill: "black" }}
+                  tick={{ fill: "white" }}
                   axisLine={{ stroke: "#ccc" }}
                 />
                 <Tooltip
