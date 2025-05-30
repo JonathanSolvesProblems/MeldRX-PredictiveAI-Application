@@ -37,101 +37,121 @@ export default function Dashboard() {
 
         if (hasQuestions) {
           return `
-        Analyze the patient's complete medical history using all available FHIR data.${
-          patientId ? ` Their patient ID is ${patientId}.` : ""
-        }
+Analyze the patient's complete medical history using all available FHIR data.${
+            patientId ? ` Their patient ID is ${patientId}.` : ""
+          }
 
-        Focus exclusively on answering the following user-provided questions. For each question:
-        - Restate the question as a heading.
-        - Provide a medically accurate and concise answer.
-        - If you did not find the answer, say "No relevant data found."
-        - Clearly cite the FHIR resources used to support your answer (e.g., Condition/abc123).
+Focus exclusively on answering the following user-provided questions. For each question:
+- Restate the question as a heading.
+- Provide a medically accurate and concise answer.
+- If you did not find the answer, say "No relevant data found."
+- Clearly cite the FHIR resources used to support your answer (e.g., Condition/abc123).
 
-        Questions:
-        - ${templatedQuestions.join("\n- ")}
+Questions:
+- ${templatedQuestions.join("\n- ")}
         `.trim();
         } else {
           return `
-        Analyze the patient's complete medical history using all available FHIR data.${
-          patientId ? ` Their patient ID is ${patientId}.` : ""
-        }
+Analyze the patient's complete medical history using all available FHIR data.${
+            patientId ? ` Their patient ID is ${patientId}.` : ""
+          }
 
-        Return your results in JSON format:
+Return your results in JSON format:
 
-        {
-          "riskScores": [
-            { "label": "Cardiovascular Risk", "score": "Moderate" },
-            { "label": "Diabetes Risk", "score": "Low" }
-          ],
-          "recommendedTreatments": [
-            { "treatment": "Metformin", "condition": "Type 2 Diabetes" },
-            { "treatment": "Lifestyle changes", "condition": "Obesity" }
-          ],
-          "preventiveMeasures": [
-            "Annual flu vaccination",
-            "Blood pressure check every 6 months"
-          ],
-          "sources": [
-            "Condition/abc123",
-            "Observation/def456",
-            "DocumentReference/file789"
-          ],
-          "summaryText": "A summary of the overall analysis of the patient's health.",
-          "accuracy": [0-1], // A value between 0 and 1 representing the model's confidence in its response, where 1 is highly accurate.
-        }
+{
+  "riskScores": [
+    { "label": "Cardiovascular Risk", "score": "Moderate" },
+    { "label": "Diabetes Risk", "score": "Low" }
+  ],
+  "recommendedTreatments": [
+    { "treatment": "Metformin", "condition": "Type 2 Diabetes" },
+    { "treatment": "Lifestyle changes", "condition": "Obesity" }
+  ],
+  "preventiveMeasures": [
+    "Annual flu vaccination",
+    "Blood pressure check every 6 months"
+  ],
+  "sources": [
+    "Condition/abc123",
+    "Observation/def456",
+    "DocumentReference/file789"
+  ],
+  "summaryText": "A summary of the overall analysis of the patient's health.",
+  "accuracy": 0.9
+}
 
-        Be concise and medically accurate. Only use fields that are applicable. Do not invent data. If no data is available, use empty arrays.
+Be concise and medically accurate. Only use fields that are applicable. Do not invent data. If no data is available, use empty arrays.
         `.trim();
         }
       };
 
-      // const prompt = () => `
-      //   Use a tool to retrieve the following FHIR resource DocumentReference with id 0bb73ae5-6670-46df-80e1-e4613f30b032.
-      // `;
-
-      console.log("generated Promot is ", generatePrompt("debug"));
+      const maxRetries = 3;
+      let attempt = 0;
+      let success = false;
+      let extractedResult: any;
+      let finalContent = "";
 
       setStatus("Analyzing entire patient context...");
-      const res = await analyzeItem(
-        "Patient Info",
-        null,
-        "gpt-4o",
-        generatePrompt
-      );
 
-      console.log("RES IS ", JSON.stringify(res, null, 2));
+      while (attempt < maxRetries && !success) {
+        attempt++;
+        console.log(`🔄 Attempt ${attempt} of ${maxRetries}`);
 
-      const label = "Patient Summary";
-      const hasQuestions = templatedQuestions?.length > 0;
-      let extractedResult = res.result || res;
+        const res = await analyzeItem(
+          "Patient Info",
+          null,
+          "gpt-4o",
+          generatePrompt
+        );
+        console.log("RES IS ", JSON.stringify(res, null, 2));
 
-      if (!hasQuestions) {
-        try {
-          if (
-            extractedResult &&
-              typeof extractedResult.content === "string"
-            ) {
-              let content = extractedResult.content.trim();
+        const hasQuestions = templatedQuestions?.length > 0;
+        extractedResult = res.result || res;
 
-            // Remove Markdown code block formatting if present
-            if (content.startsWith("```json")) {
-              content = content.replace(/^```json/, "").replace(/```$/, "").trim();
-            } else if (content.startsWith("```")) {
-              content = content.replace(/^```/, "").replace(/```$/, "").trim();
+        if (
+          !hasQuestions &&
+          extractedResult &&
+          typeof extractedResult.content === "string"
+        ) {
+          let content = extractedResult.content.trim();
+
+          // Remove Markdown formatting
+          if (content.startsWith("```json")) {
+            content = content
+              .replace(/^```json/, "")
+              .replace(/```$/, "")
+              .trim();
+          } else if (content.startsWith("```")) {
+            content = content.replace(/^```/, "").replace(/```$/, "").trim();
+          }
+
+          try {
+            extractedResult = JSON.parse(content);
+            finalContent = content;
+            success = true;
+          } catch (e) {
+            console.warn(`❌ Failed to parse JSON on attempt ${attempt}:`, e);
+            if (attempt < maxRetries) {
+              setStatus(
+                `Invalid JSON received (attempt ${attempt}). Retrying...`
+              );
+              await new Promise((res) => setTimeout(res, 1000)); // optional short delay
             }
-        try {
-          extractedResult = JSON.parse(content);
-        } catch (e) {
-          console.warn("Failed to parse JSON from cleaned content:", e);
-          setError("The AI did not return valid JSON.");
-          return;
+          }
+        } else {
+          success = true; // No JSON to parse if it's a QA response
         }
       }
 
-      console.log("Extracted result:", extractedResult);
+      if (!success) {
+        setError("❌ The AI returned invalid JSON after 3 attempts.");
+        return;
+      }
+
+      const label = "Patient Summary";
+      console.log("✅ Extracted result:", extractedResult);
 
       setResults({ [label]: [{ result: extractedResult }] });
-
       setPages({ [label]: 1 });
       setExpanded({ [label]: true });
       setProgressMap({ [label]: 100 });
