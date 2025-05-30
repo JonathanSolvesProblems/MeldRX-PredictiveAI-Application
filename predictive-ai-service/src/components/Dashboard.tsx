@@ -93,6 +93,8 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
 
       setStatus("Analyzing entire patient context...");
 
+      const hasQuestions = templatedQuestions?.length > 0;
+
       while (attempt < maxRetries && !success) {
         attempt++;
         console.log(`🔄 Attempt ${attempt} of ${maxRetries}`);
@@ -105,26 +107,21 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
         );
         console.log("RES IS ", JSON.stringify(res, null, 2));
 
-        const hasQuestions = templatedQuestions?.length > 0;
         extractedResult = res.result || res;
 
-        if (
-          !hasQuestions &&
-          extractedResult &&
-          typeof extractedResult.content === "string"
-        ) {
-          let content = extractedResult.content.trim();
+        let content = extractedResult?.content?.trim?.() ?? "";
 
-          // Remove Markdown formatting
-          if (content.startsWith("```json")) {
-            content = content
-              .replace(/^```json/, "")
-              .replace(/```$/, "")
-              .trim();
-          } else if (content.startsWith("```")) {
-            content = content.replace(/^```/, "").replace(/```$/, "").trim();
-          }
+        // Strip Markdown if present
+        if (content.startsWith("```json")) {
+          content = content
+            .replace(/^```json/, "")
+            .replace(/```$/, "")
+            .trim();
+        } else if (content.startsWith("```")) {
+          content = content.replace(/^```/, "").replace(/```$/, "").trim();
+        }
 
+        if (!hasQuestions) {
           try {
             extractedResult = JSON.parse(content);
             finalContent = content;
@@ -135,11 +132,25 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
               setStatus(
                 `Invalid JSON received (attempt ${attempt}). Retrying...`
               );
-              await new Promise((res) => setTimeout(res, 1000)); // optional short delay
+              await new Promise((res) => setTimeout(res, 1000));
             }
           }
         } else {
-          success = true; // No JSON to parse if it's a QA response
+          // Accept response if it's non-empty and seems like a reasonable answer
+          if (content.length > 50) {
+            extractedResult.content = content;
+            success = true;
+          } else {
+            console.warn(
+              `❌ Incomplete or invalid Q&A response on attempt ${attempt}`
+            );
+            if (attempt < maxRetries) {
+              setStatus(
+                `Incomplete answer received (attempt ${attempt}). Retrying...`
+              );
+              await new Promise((res) => setTimeout(res, 1000));
+            }
+          }
         }
       }
 
@@ -189,7 +200,7 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
 
   return (
     <div className="p-6 max-h-screen overflow-y-auto">
-      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+      {/* <h1 className="text-3xl font-bold mb-4">Dashboard</h1> */}
 
       <div className="bg-base-200 p-4 rounded-lg mb-6">
         <p className="text-md mb-2">
@@ -217,8 +228,11 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
       {error && <p className="text-red-500">{error}</p>}
 
       {!isRunning && (
-        <div className="mt-6 flex justify-center">
-          <button className="btn btn-primary text-white" onClick={analyzeData}>
+        <div className="mt-8 pb-6 flex justify-center">
+          <button
+            className="btn btn-primary text-white shadow-lg hover:shadow-xl transition duration-200 rounded-lg px-6 py-2"
+            onClick={analyzeData}
+          >
             Analyze Patient Data
           </button>
         </div>

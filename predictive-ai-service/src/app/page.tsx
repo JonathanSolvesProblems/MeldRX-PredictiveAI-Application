@@ -101,7 +101,7 @@ export default function Home() {
           className={`tab ${activeTab === "dashboard" ? "tab-active" : ""}`}
           onClick={() => setActiveTab("dashboard")}
         >
-          Dashboard
+          Overview
         </a>
         <a
           role="tab"
