@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   };
 
   try {
-    // Checks for an existing observation with analysis.
+    // Search for an existing Observation with the given code and patient
     const searchResponse = await fetch(
       `${baseUrl}/Observation?subject=Patient/${patientId}&code=http://example.org/fhir/CodeSystem/ai-analysis|ai-last-analysis`,
       {
@@ -57,19 +57,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const existingObservation = searchResult.entry?.[0]?.resource;
 
     if (existingObservation?.id) {
-      // Update the existing Observation
+      // Prepare minimal Observation object for update
+      const updatedObservation = {
+        resourceType: "Observation",
+        id: existingObservation.id,
+        status: "final",
+        code: {
+          coding: [
+            {
+              system: "http://example.org/fhir/CodeSystem/ai-analysis",
+              code: "ai-last-analysis",
+              display: "Last AI Analysis Date",
+            },
+          ],
+        },
+        subject: {
+          reference: `Patient/${patientId}`,
+        },
+        effectiveDateTime: date,
+        valueDateTime: date,
+        valueString: analysisData ?? "",
+      };
+
       const updateResponse = await fetch(`${baseUrl}/Observation/${existingObservation.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/fhir+json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...existingObservation,
-          effectiveDateTime: date,
-          valueDateTime: date,
-          valueString: analysisData ?? existingObservation.valueString,
-        }),
+        body: JSON.stringify(updatedObservation),
       });
 
       if (!updateResponse.ok) {
@@ -80,10 +96,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       return res.status(200).json({ message: "Observation updated in FHIR" });
     } else {
-      // Otherwise create a new Observation
+      // Create a new Observation, always include valueString (empty string if missing)
       const createObservation = {
         ...observationBase,
-        ...(analysisData ? { valueString: analysisData } : {}), // Only include if provided
+        valueString: analysisData ?? "",
       };
 
       const createResponse = await fetch(`${baseUrl}/Observation`, {
