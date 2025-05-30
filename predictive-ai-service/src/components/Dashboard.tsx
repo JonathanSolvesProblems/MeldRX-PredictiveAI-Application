@@ -229,34 +229,45 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
           <div key={type} className="mb-4 border rounded p-3 shadow">
             <h2 className="text-lg font-semibold mb-2">{type}</h2>
 
-            {entries.map((entry, i) => (
-              <div
-                key={i}
-                className="my-4 p-4 rounded-lg shadow bg-base-100 border"
-              >
-                {entry.result &&
-                typeof entry.result === "object" &&
-                !Array.isArray(entry.result) &&
-                ("riskScores" in entry.result ||
-                  "recommendedTreatments" in entry.result ||
-                  "preventiveMeasures" in entry.result ||
-                  "summaryText" in entry.result) ? (
-                  <RenderStructuredResult result={entry.result} />
-                ) : templatedQuestions.length ? (
-                  <RenderTemplatedQnA
-                    content={entry.result?.content || entry.result}
-                  />
-                ) : (
-                  <pre className="whitespace-pre-wrap text-sm">
-                    {entry.result?.content
-                      ? entry.result.content
-                      : entry.result
-                      ? JSON.stringify(entry.result, null, 2)
-                      : `❌ ${entry.error}`}
-                  </pre>
-                )}
-              </div>
-            ))}
+            {entries.map((entry, i) => {
+              const res = entry.result;
+              console.log(
+                "Structured result passed to RenderStructuredResult:",
+                res
+              );
+
+              const isStructured =
+                res &&
+                typeof res === "object" &&
+                !Array.isArray(res) &&
+                ("riskScores" in res ||
+                  "recommendedTreatments" in res ||
+                  "preventiveMeasures" in res ||
+                  "summaryText" in res);
+
+              console.log("Is structured result:", isStructured);
+
+              return (
+                <div
+                  key={i}
+                  className="my-4 p-4 rounded-lg shadow bg-base-100 border"
+                >
+                  {isStructured ? (
+                    <RenderStructuredResult result={res} />
+                  ) : templatedQuestions.length ? (
+                    <RenderTemplatedQnA content={res?.content || res} />
+                  ) : (
+                    <pre className="whitespace-pre-wrap text-sm">
+                      {res?.content
+                        ? res.content
+                        : res
+                        ? JSON.stringify(res, null, 2)
+                        : `❌ ${entry.error}`}
+                    </pre>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ))}
     </div>
