@@ -90,7 +90,7 @@ export const fetchLastAnalyzed = async (
 ): Promise<{ content: string | null; structured: any | null }> => {
   if (!token || !patientId) return { content: null, structured: null };
 
-  const url = `https://app.meldrx.com/api/fhir/${process.env.NEXT_PUBLIC_APP_ID}/Observation?patient=${patientId}&code=last-analysis&_sort=-date&_count=1`;
+  const url = `https://app.meldrx.com/api/fhir/${process.env.NEXT_PUBLIC_APP_ID}/Observation?subject=Patient/${patientId}&code=http://example.org/fhir/CodeSystem/ai-analysis|ai-last-analysis&_sort=-date&_count=1`;
 
   try {
     const res = await axios.get(url, {
@@ -100,41 +100,22 @@ export const fetchLastAnalyzed = async (
     const entry = res.data.entry?.[0]?.resource;
     if (!entry) return { content: null, structured: null };
 
-    // First: check for component.valueString (new JSON-safe field)
     const component = entry.component?.find((c: any) =>
       c.code?.coding?.some(
         (coding: any) => coding.code === "analysis-json"
       )
     );
 
-    const structuredValue = component?.valueString;
+    const valueString = component?.valueString;
+    if (!valueString) return { content: null, structured: null };
 
-    if (structuredValue) {
-      try {
-        const parsed = JSON.parse(structuredValue);
-        return { structured: parsed, content: null };
-      } catch (e) {
-        console.warn("❌ Failed to parse valueString JSON:", e);
-        // fall back to treating as plain content
-        return { structured: null, content: structuredValue };
-      }
+    try {
+      const parsed = JSON.parse(valueString);
+      return { structured: parsed, content: null };
+    } catch (e) {
+      console.warn("❌ Failed to parse valueString JSON:", e);
+      return { content: valueString, structured: null };
     }
-
-    // Fallback: original legacy valueString or valueAttachment
-    const valueString = entry.valueString;
-    const attachment = entry.valueAttachment?.data;
-
-    if (attachment) {
-      try {
-        const decoded = atob(attachment);
-        return { structured: JSON.parse(decoded), content: null };
-      } catch (e) {
-        console.warn("❌ Failed to parse attachment JSON:", e);
-        return { structured: null, content: null };
-      }
-    }
-
-    return { content: valueString || null, structured: null };
   } catch (err) {
     console.error("❌ Error fetching last analysis observation:", err);
     return { content: null, structured: null };
