@@ -76,7 +76,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         effectiveDateTime: date,
         valueDateTime: date,
-        valueString: analysisData ?? "",
+        valueAttachment: {
+          contentType: "application/json",
+          data: Buffer.from(analysisData ?? "", "utf-8").toString("base64"),
+       }
       };
 
       const updateResponse = await fetch(`${baseUrl}/Observation/${existingObservation.id}`, {
@@ -99,7 +102,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Create a new Observation, always include valueString (empty string if missing)
       const createObservation = {
         ...observationBase,
-        valueString: analysisData ?? "",
+        valueAttachment: {
+          contentType: "application/json",
+          data: Buffer.from(analysisData ?? "", "utf-8").toString("base64"),
+        },
       };
 
       const createResponse = await fetch(`${baseUrl}/Observation`, {
@@ -112,9 +118,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (!createResponse.ok) {
-        const text = await createResponse.text();
-        console.error("FHIR create failed:", createResponse.status, text);
-        return res.status(500).json({ message: "Failed to create new observation in FHIR" });
+          const text = await createResponse.text();
+          console.error("FHIR create failed:", createResponse.status, text, createObservation);
+          return res.status(500).json({ message: "Failed to create new observation in FHIR", fhirError: text });
       }
 
       return res.status(200).json({ message: "New observation created in FHIR" });
