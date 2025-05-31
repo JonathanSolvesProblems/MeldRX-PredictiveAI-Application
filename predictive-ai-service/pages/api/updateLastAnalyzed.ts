@@ -76,10 +76,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         effectiveDateTime: date,
         valueDateTime: date,
-        valueAttachment: {
-          contentType: "application/json",
-          data: Buffer.from(analysisData ?? "", "utf-8").toString("base64"),
-       }
+        component: [
+          {
+          code: {
+            coding: [
+              {
+                system: "http://example.org/fhir/CodeSystem/ai-analysis",
+                code: "analysis-json",
+                display: "AI Analysis Data",
+              },
+            ],
+          },
+          valueAttachment: {
+            contentType: "application/json",
+            data: Buffer.from(analysisData ?? "", "utf-8").toString("base64"),
+          },
+        },
+      ],
       };
 
       const updateResponse = await fetch(`${baseUrl}/Observation/${existingObservation.id}`, {
@@ -99,13 +112,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       return res.status(200).json({ message: "Observation updated in FHIR" });
     } else {
-      // Create a new Observation, always include valueString (empty string if missing)
+      // Create a new Observation
       const createObservation = {
         ...observationBase,
-        valueAttachment: {
-          contentType: "application/json",
-          data: Buffer.from(analysisData ?? "", "utf-8").toString("base64"),
+        component: [
+          {
+          code: {
+            coding: [
+              {
+                system: "http://example.org/fhir/CodeSystem/ai-analysis",
+                code: "analysis-json",
+                display: "AI Analysis Data",
+              },
+            ],
+          },
+          valueAttachment: {
+            contentType: "application/json",
+            data: Buffer.from(analysisData ?? "", "utf-8").toString("base64"),
+          },
         },
+      ],
       };
 
       const createResponse = await fetch(`${baseUrl}/Observation`, {
