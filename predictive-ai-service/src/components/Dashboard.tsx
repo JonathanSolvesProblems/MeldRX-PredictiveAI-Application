@@ -289,10 +289,7 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
 
             {entries.map((entry, i) => {
               const res = entry.result;
-              console.log(
-                "Structured result passed to RenderStructuredResult:",
-                res
-              );
+              console.log("Structured result passed:", res);
 
               const isStructured =
                 res &&
@@ -305,6 +302,9 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
 
               console.log("Is structured result:", isStructured);
 
+              const isQnA =
+                typeof res === "string" || typeof res?.content === "string";
+
               return (
                 <div
                   key={i}
@@ -312,7 +312,7 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
                 >
                   {isStructured ? (
                     <RenderStructuredResult result={res} />
-                  ) : templatedQuestions.length ? (
+                  ) : isQnA ? (
                     <RenderTemplatedQnA content={res?.content || res} />
                   ) : (
                     <pre className="whitespace-pre-wrap text-sm">

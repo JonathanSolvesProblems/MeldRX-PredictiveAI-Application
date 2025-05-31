@@ -113,7 +113,7 @@ export const fetchLastAnalyzed = async (
       const parsed = JSON.parse(valueString);
       return { structured: parsed, content: null };
     } catch (e) {
-      console.warn("❌ Failed to parse valueString JSON:", e);
+      // console.warn("❌ Failed to parse valueString JSON:", e);
       return { content: valueString, structured: null };
     }
   } catch (err) {
