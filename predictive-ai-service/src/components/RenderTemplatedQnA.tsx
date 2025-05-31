@@ -12,6 +12,8 @@ export const RenderTemplatedQnA = ({ content }: { content: string }) => {
   const [fetched, setFetched] = useState<Record<string, any>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
+  console.log("RenderTemplatedQnA content:", content);
+
   if (typeof content !== "string") {
     return (
       <div className="text-red-500">
