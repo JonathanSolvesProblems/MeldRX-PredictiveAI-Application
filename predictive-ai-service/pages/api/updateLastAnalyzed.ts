@@ -53,46 +53,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const searchResult = await searchResponse.json();
-
     const existingObservation = searchResult.entry?.[0]?.resource;
 
+    const analysisString =
+      typeof analysisData === "string" ? analysisData : JSON.stringify(analysisData);
+
     if (existingObservation?.id) {
-      // Prepare minimal Observation object for update
+      // Update existing Observation
       const updatedObservation = {
         resourceType: "Observation",
         id: existingObservation.id,
         status: "final",
-        code: {
-          coding: [
-            {
-              system: "http://example.org/fhir/CodeSystem/ai-analysis",
-              code: "ai-last-analysis",
-              display: "Last AI Analysis Date",
-            },
-          ],
-        },
-        subject: {
-          reference: `Patient/${patientId}`,
-        },
+        code: observationBase.code,
+        subject: observationBase.subject,
         effectiveDateTime: date,
         valueDateTime: date,
         component: [
           {
-          code: {
-            coding: [
-              {
-                system: "http://example.org/fhir/CodeSystem/ai-analysis",
-                code: "analysis-json",
-                display: "AI Analysis Data",
-              },
-            ],
+            code: {
+              coding: [
+                {
+                  system: "http://example.org/fhir/CodeSystem/ai-analysis",
+                  code: "analysis-json",
+                  display: "AI Analysis Data",
+                },
+              ],
+            },
+            valueString: analysisString,
           },
-          valueAttachment: {
-            contentType: "application/json",
-            data: Buffer.from(analysisData ?? "", "utf-8").toString("base64"),
-          },
-        },
-      ],
+        ],
       };
 
       const updateResponse = await fetch(`${baseUrl}/Observation/${existingObservation.id}`, {
@@ -112,26 +101,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       return res.status(200).json({ message: "Observation updated in FHIR" });
     } else {
-      // Create a new Observation
+      // Create new Observation
       const createObservation = {
         ...observationBase,
         component: [
           {
-          code: {
-            coding: [
-              {
-                system: "http://example.org/fhir/CodeSystem/ai-analysis",
-                code: "analysis-json",
-                display: "AI Analysis Data",
-              },
-            ],
+            code: {
+              coding: [
+                {
+                  system: "http://example.org/fhir/CodeSystem/ai-analysis",
+                  code: "analysis-json",
+                  display: "AI Analysis Data",
+                },
+              ],
+            },
+            valueString: analysisString,
           },
-          valueAttachment: {
-            contentType: "application/json",
-            data: Buffer.from(analysisData ?? "", "utf-8").toString("base64"),
-          },
-        },
-      ],
+        ],
       };
 
       const createResponse = await fetch(`${baseUrl}/Observation`, {
@@ -144,9 +130,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (!createResponse.ok) {
-          const text = await createResponse.text();
-          console.error("FHIR create failed:", createResponse.status, text, createObservation);
-          return res.status(500).json({ message: "Failed to create new observation in FHIR", fhirError: text });
+        const text = await createResponse.text();
+        console.error("FHIR create failed:", createResponse.status, text, createObservation);
+        return res.status(500).json({
+          message: "Failed to create new observation in FHIR",
+          fhirError: text,
+        });
       }
 
       return res.status(200).json({ message: "New observation created in FHIR" });
