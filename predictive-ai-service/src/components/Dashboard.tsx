@@ -37,13 +37,29 @@ export default function Dashboard() {
       if (!content && !structured) return;
 
       const label = "Patient Summary";
+      let result;
 
       if (structured) {
-        setResults({ [label]: [{ result: structured }] });
-      } else {
-        setResults({ [label]: [{ result: { content } }] });
+        result = structured;
+      } else if (content) {
+        try {
+          const maybeParsed = JSON.parse(content);
+          const isStructured =
+            typeof maybeParsed === "object" &&
+            ("riskScores" in maybeParsed ||
+              "recommendedTreatments" in maybeParsed ||
+              "preventiveMeasures" in maybeParsed ||
+              "summaryText" in maybeParsed);
+
+          result = isStructured ? maybeParsed : { content };
+        } catch {
+          result = { content }; // fallback to plain string Q&A
+        }
       }
 
+      if (!result) return;
+
+      setResults({ [label]: [{ result }] });
       setPages({ [label]: 1 });
       setExpanded({ [label]: true });
       setProgressMap({ [label]: 100 });
