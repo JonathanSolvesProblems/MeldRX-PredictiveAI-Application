@@ -17,6 +17,7 @@ import {
 import AnalysisPDF from "./AnalysisPDF";
 import { formatResultForPDF } from "@/utils/helper";
 import { updateLastAnalyzed } from "@/utils/serverAPICalls";
+import { createCDSCard } from "@/utils/cdsCardManager";
 
 export function RenderStructuredResult({ result }: { result: any }) {
   const [fetchedSources, setFetchedSources] = useState<Record<string, any>>({});
@@ -72,6 +73,18 @@ export function RenderStructuredResult({ result }: { result: any }) {
     score: r.score === "Low" ? 1 : r.score === "Moderate" ? 2 : 3,
     rawScore: r.score,
   }));
+
+  useEffect(() => {
+    if (!riskData.length) return;
+
+    riskData.forEach((risk: any) => {
+      if (risk.score === 2) {
+        createCDSCard(`Moderate risk detected: ${risk.name}`, "warning");
+      } else if (risk.score === 3) {
+        createCDSCard(`High risk detected: ${risk.name}`, "critical");
+      }
+    });
+  }, [riskData]);
 
   const getRiskColor = (score: number) => {
     if (score === 1) return "#22c55e";
