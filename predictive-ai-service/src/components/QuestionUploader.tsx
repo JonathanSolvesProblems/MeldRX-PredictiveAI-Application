@@ -1,7 +1,7 @@
 // components/QuestionUploader.tsx
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { setQuestions } from "@/app/redux/questionSlice";
@@ -12,6 +12,7 @@ export const QuestionUploader: React.FC = () => {
   const questions = useSelector(
     (state: RootState) => state.questions.questions
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -41,6 +42,10 @@ export const QuestionUploader: React.FC = () => {
       }
     } catch (e) {
       alert("Failed to load questions: " + (e as Error).message);
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -58,6 +63,7 @@ export const QuestionUploader: React.FC = () => {
           accept=".json,.xls,.xlsx"
           hidden
           onChange={handleFileUpload}
+          ref={fileInputRef}
         />
       </label>
       {questions.length > 0 && (
