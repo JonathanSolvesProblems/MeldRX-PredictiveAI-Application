@@ -86,7 +86,7 @@ export const DocumentWheel: React.FC = () => {
           const cached = docContentCache[doc.id];
           return `You are a clinical documentation analyst AI. Carefully review the provided medical document content below. This content may include structured clinical text, scanned notes, or diagnostic images such as X-rays.
 
-          If the content is an image or refers to one (e.g., base64 image data or image URL), assume it's a medical diagnostic image (like an X-ray or scan). If it’s an image, describe any visible abnormalities or likely clinical findings in clear language.
+          If the content is an image or refers to one (e.g., base64 image data or image URL), assume it's a medical diagnostic image (like an X-ray or scan). If it's an image, describe any visible abnormalities or likely clinical findings in clear language.
 
           Document content:
           --------------------

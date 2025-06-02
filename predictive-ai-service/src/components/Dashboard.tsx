@@ -34,7 +34,11 @@ export default function Dashboard() {
 
       const { content, structured } = await fetchLastAnalyzed(token, patientId);
 
-      if (!content && !structured) return;
+      if (!content && !structured) {
+        // Start analyzing by default if no previous analysis found
+        await analyzeData();
+        return;
+      }
 
       const label = "Patient Summary";
       let result;
@@ -250,7 +254,8 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
         <p className="text-md mb-2">
           Click the{" "}
           <span className="font-semibold">"Analyze Patient Data"</span> button
-          below to begin reviewing the patient's medical history.
+          below to re-analyze the patient's data. It will appear when the
+          patient's data is not being analyzed.
         </p>
         <p className="text-md">
           <span className="font-semibold">Optional:</span> You can also import

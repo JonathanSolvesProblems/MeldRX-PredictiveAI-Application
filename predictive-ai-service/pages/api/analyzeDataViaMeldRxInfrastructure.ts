@@ -102,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }    
     }
 
-    const updatedPrompt = prompt.slice(0, MAX_PROMPT_CHARS);
+    const updatedPrompt = prompt; // .slice(0, MAX_PROMPT_CHARS);
 
     const aiRequest = {
       model: modelName,
