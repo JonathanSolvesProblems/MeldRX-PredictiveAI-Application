@@ -84,24 +84,29 @@ export const DocumentWheel: React.FC = () => {
         "Llama-3.2-11B-Vision-Instruct",
         (doc) => {
           const cached = docContentCache[doc.id];
-          return `You are a clinical documentation analyst AI. Carefully review the provided medical document content below. This content may include structured clinical text, scanned notes, or diagnostic images such as X-rays.
+          const docContent = cached ? cached.content : JSON.stringify(doc);
 
-          If the content is an image or refers to one (e.g., base64 image data or image URL), assume it's a medical diagnostic image (like an X-ray or scan). If it's an image, describe any visible abnormalities or likely clinical findings in clear language.
+          return `You are a clinical documentation analyst AI. Your goal is to extract **accurate, clinically relevant observations** from the document content provided below. This content may include structured clinical text, scanned physician notes, or medical diagnostic images (e.g., X-rays, CT scans).
 
-          Document content:
-          --------------------
-          ${cached ? cached.content : JSON.stringify(doc)}
+If the document includes or refers to an image (e.g., a base64-encoded image, DICOM link, or image URL), treat it as a diagnostic image. In such cases, **analyze the visual content carefully** and describe only what is visible in the image — such as fractures, dislocations, soft tissue abnormalities, or implants. Do not infer or assume anything that cannot be directly observed.
 
-          ${
-            templatedQuestions.length > 0
-              ? `
-          Answer the following questions based strictly on the document content above. If any question cannot be answered, say "No relevant information found."
+When analyzing textual content, summarize key clinical information such as diagnoses, procedures, findings, and history — but do **not** invent or generalize beyond what the document states.
 
-          Questions:
-          ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
-          `
-              : ""
-          }`;
+Document content:
+--------------------
+${docContent}
+
+${
+  templatedQuestions.length > 0
+    ? `
+Now, answer the following questions **strictly based on the document above**. If a question cannot be answered with high confidence from the document content, respond with: "No relevant information found."
+
+Questions:
+${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+`
+    : ""
+}
+`;
         },
         async (doc) => {
           const cached = docContentCache[doc.id];
