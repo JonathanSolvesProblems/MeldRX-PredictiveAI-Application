@@ -6,7 +6,7 @@ import { setUser, setToken, setPatientId } from "./redux/authSlice"; // Adjust p
 import { handleCallback, handleLaunch } from "../utils/auth"; // Assuming these functions are implemented
 import axios from "axios";
 import { DocumentWheel } from "@/components/DocumentWheel";
-import Dashboard from "@/components/Dashboard";
+import AICentralAnalyzer from "@/components/AICentralAnalyzer";
 import { QuestionUploader } from "@/components/QuestionUploader";
 // import AnalyzeDocumentsButton from "@/components/AnalyzeDocumentsButton";
 // import Dashboard from "@/components/Dashboard";
@@ -18,8 +18,8 @@ export default function Home() {
   const patientId = useSelector((state: any) => state.auth.patientId);
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [patientName, setPatientName] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"dashboard" | "documents">(
-    "dashboard"
+  const [activeTab, setActiveTab] = useState<"aianalyzer" | "documents">(
+    "aianalyzer"
   );
 
   useEffect(() => {
@@ -98,8 +98,8 @@ export default function Home() {
       <div role="tablist" className="tabs tabs-bordered mb-4">
         <a
           role="tab"
-          className={`tab ${activeTab === "dashboard" ? "tab-active" : ""}`}
-          onClick={() => setActiveTab("dashboard")}
+          className={`tab ${activeTab === "aianalyzer" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("aianalyzer")}
         >
           Overview
         </a>
@@ -133,7 +133,7 @@ export default function Home() {
             <p className="text-center text-xl mb-4">Loading Patient Name...</p>
           )}
 
-          {activeTab === "dashboard" && <Dashboard />}
+          {activeTab === "aianalyzer" && <AICentralAnalyzer />}
 
           {activeTab === "documents" && (
             <div className="p-4">
