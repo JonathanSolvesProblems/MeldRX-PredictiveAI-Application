@@ -72,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       links: [
         {
           label: "Get AI Insights",
-          url: "https://meldrx-predictiveai-application.apps.darenahealth.com/launch",
+          url: "https://meldrx-predictiveai-application.apps.meldrx.com/launch",
           type: "smart",
         },
       ],
