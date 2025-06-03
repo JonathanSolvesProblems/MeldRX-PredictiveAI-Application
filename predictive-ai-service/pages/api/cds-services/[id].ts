@@ -12,13 +12,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const patientName = `${patient?.name?.[0]?.given?.[0] || ""} ${patient?.name?.[0]?.family || ""}`.trim();
 
     let lastAnalyzed = "";
+    let riskCards: any[] = [];
 
     if (observations?.entry?.length) {
       const aiAnalysisObservations = observations.entry
         .map((e: any) => e.resource)
-        .filter((r: any) =>
-          r.resourceType === "Observation" &&
-          r.code?.coding?.some((c: any) => c.code === "ai-last-analysis")
+        .filter(
+          (r: any) =>
+            r.resourceType === "Observation" &&
+            r.code?.coding?.some((c: any) => c.code === "ai-last-analysis")
         );
 
       // Sort by valueDateTime (or effectiveDateTime) descending
@@ -28,8 +30,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       );
 
       const mostRecent = aiAnalysisObservations[0];
+
       if (mostRecent?.valueDateTime) {
         lastAnalyzed = mostRecent.valueDateTime;
+      }
+
+      // Parse riskScores and generate additional cards
+      const analysisComponent = mostRecent?.component?.find(
+        (comp: any) =>
+          comp.code?.coding?.some((c: any) => c.code === "analysis-json") &&
+          typeof comp.valueString === "string"
+      );
+
+      if (analysisComponent) {
+        try {
+          const analysisData = JSON.parse(analysisComponent.valueString);
+          const riskScores = analysisData?.riskScores || [];
+
+          riskCards = riskScores
+            .filter((risk: any) => ["moderate", "high"].includes((risk.score || "").toLowerCase()))
+            .map((risk: any) => ({
+              summary: `Risk identified: ${risk.label} (${risk.score})`,
+              indicator: risk.score.toLowerCase() === "high" ? "critical" : "warning",
+              source: { label: "AI Predictive Service" },
+              detail: `AI identified a ${risk.score.toLowerCase()} risk for ${risk.label}. Consider reviewing recent clinical data or initiating appropriate interventions.`,
+            }));
+        } catch (e) {
+          console.warn("Invalid JSON in analysis component:", e);
+        }
       }
     }
 
@@ -37,21 +65,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? `AI insights available for ${patientName} - Last analyzed ${lastAnalyzed}`
       : `AI insights unavailable for ${patientName} - Launch app to get started`;
 
-    return res.json({
-      cards: [
+    const mainCard = {
+      summary,
+      indicator: lastAnalyzed ? "info" : "warning",
+      source: { label: "AI Predictive Service" },
+      links: [
         {
-          summary,
-          indicator: lastAnalyzed ? "info" : "warning",
-          source: { label: "AI Predictive Service" },
-          links: [
-            {
-              label: "Get AI Insights",
-              url: "https://meldrx-predictiveai-application.apps.darenahealth.com/launch",
-              type: "smart",
-            },
-          ],
+          label: "Get AI Insights",
+          url: "https://meldrx-predictiveai-application.apps.darenahealth.com/launch",
+          type: "smart",
         },
       ],
+    };
+
+    return res.json({
+      cards: [mainCard, ...riskCards],
     });
   } catch (error: any) {
     console.error("CDS Hook Error:", error);
