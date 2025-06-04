@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Pencil,
   X,
@@ -20,47 +20,38 @@ export const QuestionsOverlay: React.FC<{
   onClose: () => void;
 }> = ({ open, questions, onClose }) => {
   const dispatch = useDispatch();
-  const [editableQuestions, setEditableQuestions] =
-    useState<string[]>(questions);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newQuestion, setNewQuestion] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(0);
 
-  useEffect(() => {
-    setEditableQuestions(questions);
-  }, [questions]);
-
-  const totalPages = Math.ceil(editableQuestions.length / QUESTIONS_PER_PAGE);
+  const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
 
   const handleEdit = (index: number, value: string) => {
     const globalIndex = currentPage * QUESTIONS_PER_PAGE + index;
-    const updated = [...editableQuestions];
+    const updated = [...questions];
     updated[globalIndex] = value;
-    setEditableQuestions(updated);
     dispatch(setQuestions(updated));
   };
 
   const handleAdd = () => {
     const trimmed = newQuestion.trim();
     if (!trimmed) return;
-    const updated = [...editableQuestions, trimmed];
-    setEditableQuestions(updated);
+    const updated = [...questions, trimmed];
     dispatch(setQuestions(updated));
     setNewQuestion("");
-    setCurrentPage(totalPages); // jump to last page
+    setCurrentPage(Math.floor(updated.length / QUESTIONS_PER_PAGE)); // Go to last page
   };
 
   const handleDelete = (index: number) => {
     const globalIndex = currentPage * QUESTIONS_PER_PAGE + index;
-    const updated = editableQuestions.filter((_, i) => i !== globalIndex);
-    setEditableQuestions(updated);
+    const updated = questions.filter((_, i) => i !== globalIndex);
     dispatch(setQuestions(updated));
-    if (currentPage > 0 && globalIndex === editableQuestions.length - 1) {
+    if (currentPage > 0 && globalIndex === questions.length - 1) {
       setCurrentPage((prev) => prev - 1);
     }
   };
 
-  const paginatedQuestions = editableQuestions.slice(
+  const paginatedQuestions = questions.slice(
     currentPage * QUESTIONS_PER_PAGE,
     (currentPage + 1) * QUESTIONS_PER_PAGE
   );
