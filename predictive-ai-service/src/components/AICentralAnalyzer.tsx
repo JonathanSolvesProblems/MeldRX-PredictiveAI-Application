@@ -126,53 +126,52 @@ Return your results in JSON format:
   "summaryText": "A summary of the overall analysis of the patient's health.",
   "accuracy": 0.9,
   accuracyExplanation: "The AI's confidence in the analysis based on available data.",
-  "dashboardViews": [
-    {
-      "name": "Default Dashboard",
-      "created": "2025-06-03T14:00:00Z",
-      "lastViewed": "2025-06-03T14:30:00Z"
-    }
-  ],
-  "graphOptions": {
-    "HbA1c": {
-      "displayAs": "line",
-      "trend": true,
-      "dataPoints": [
-        { "date": "2025-01-01", "value": 6.2 },
-        { "date": "2025-03-01", "value": 6.5 },
-        { "date": "2025-06-01", "value": 6.4 }
-      ]
-    }
-  },
-  "customLayout": {
-    "sectionsOrder": [
-      "summaryText",
-      "riskScores",
-      "recommendedTreatments",
-      "preventiveMeasures",
-      "patientCompliance",
-      "sources"
-    ],
-    "hiddenSections": ["accuracy"]
-  },
-  "patientCompliance": {
-    "medicationsPickedUp": [
-      { "medication": "Metformin", "status": "Picked up", "date": "2025-05-25" }
-    ],
-    "labsCompleted": [
-      { "test": "HbA1c", "status": "Completed", "date": "2025-06-01" }
-    ],
-    "imagingCompleted": [
-      { "study": "Chest X-ray", "status": "Pending", "requestedDate": "2025-05-20" }
-    ]
-  }
 }
 
 Be concise and medically accurate. Only use fields that are applicable. Do not invent data. If no data is available, use empty arrays.
         `.trim();
         }
       };
-
+      // "dashboardViews": [
+      //   {
+      //     "name": "Default Dashboard",
+      //     "created": "2025-06-03T14:00:00Z",
+      //     "lastViewed": "2025-06-03T14:30:00Z"
+      //   }
+      // ],
+      // "graphOptions": {
+      //   "HbA1c": {
+      //     "displayAs": "line",
+      //     "trend": true,
+      //     "dataPoints": [
+      //       { "date": "2025-01-01", "value": 6.2 },
+      //       { "date": "2025-03-01", "value": 6.5 },
+      //       { "date": "2025-06-01", "value": 6.4 }
+      //     ]
+      //   }
+      // },
+      // "customLayout": {
+      //   "sectionsOrder": [
+      //     "summaryText",
+      //     "riskScores",
+      //     "recommendedTreatments",
+      //     "preventiveMeasures",
+      //     "patientCompliance",
+      //     "sources"
+      //   ],
+      //   "hiddenSections": ["accuracy"]
+      // },
+      // "patientCompliance": {
+      //   "medicationsPickedUp": [
+      //     { "medication": "Metformin", "status": "Picked up", "date": "2025-05-25" }
+      //   ],
+      //   "labsCompleted": [
+      //     { "test": "HbA1c", "status": "Completed", "date": "2025-06-01" }
+      //   ],
+      //   "imagingCompleted": [
+      //     { "study": "Chest X-ray", "status": "Pending", "requestedDate": "2025-05-20" }
+      //   ]
+      // }
       const maxRetries = 3;
       let attempt = 0;
       let success = false;
