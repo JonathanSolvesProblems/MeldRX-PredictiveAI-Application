@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { setQuestions } from "@/app/redux/questionSlice";
 import * as XLSX from "xlsx";
 import { UploadCloud, XCircle, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import QuestionsOverlay from "./QuestionsOverlay";
 
 export const QuestionUploader: React.FC = () => {
   const dispatch = useDispatch();
@@ -14,8 +15,8 @@ export const QuestionUploader: React.FC = () => {
     (state: RootState) => state.questions.questions
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showOverlay, setShowOverlay] = useState(false);
 
-  /* ------------------------------ HELPERS ----------------------------- */
   const showToast = (msg: string, type: "success" | "error" = "success") => {
     const div = document.createElement("div");
     div.className = `alert alert-${type} shadow-lg w-fit`;
@@ -64,7 +65,6 @@ export const QuestionUploader: React.FC = () => {
     showToast("Templated questions cleared!", "error");
   };
 
-  /* ------------------------------------------------------------------- */
   return (
     <motion.div
       className="glass bg-base-100/60 border border-base-content/10 p-4 rounded-2xl shadow-lg flex flex-col md:flex-row gap-4 items-center max-w-fit hover:shadow-xl transition-shadow"
@@ -92,9 +92,12 @@ export const QuestionUploader: React.FC = () => {
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.2 }}
           >
-            <span className="badge badge-success gap-1 text-sm py-2 px-3">
+            <button
+              onClick={() => setShowOverlay(true)}
+              className="badge badge-success gap-1 text-sm py-2 px-3 cursor-pointer"
+            >
               <CheckCircle className="w-4 h-4" /> {questions.length} questions
-            </span>
+            </button>
             <button
               className="btn btn-error btn-sm gap-1"
               onClick={handleClearQuestions}
@@ -104,6 +107,12 @@ export const QuestionUploader: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <QuestionsOverlay
+        open={showOverlay}
+        questions={questions}
+        onClose={() => setShowOverlay(false)}
+      />
     </motion.div>
   );
 };
