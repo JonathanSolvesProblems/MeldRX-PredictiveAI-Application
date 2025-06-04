@@ -61,6 +61,8 @@ export default function AICentralAnalyzer() {
         }
       }
 
+      console.log("Loaded last analysis result:", result);
+
       if (!result) return;
 
       setResults({ [label]: [{ result }] });
@@ -280,10 +282,6 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
     setStatus("Analysis cancelled.");
     setIsRunning(false);
   };
-
-  useEffect(() => {
-    console.log("Results updated:", results);
-  }, [results]);
 
   return (
     <div className="p-6 max-h-screen overflow-y-auto">

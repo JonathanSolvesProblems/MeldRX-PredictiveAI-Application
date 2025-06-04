@@ -154,8 +154,8 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
   }
 
   return (
-    <div className="overflow-x-auto py-4 space-y-4">
-      <div className="flex space-x-4">
+    <div className="overflow-x-auto py-6 px-4 space-y-6">
+      <div className="flex flex-wrap gap-4 justify-start">
         {documents.map((doc) => {
           const attachment = doc.content?.[0]?.attachment;
           const analysis = analysisResults[doc.id];
@@ -164,12 +164,12 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           return (
             <div
               key={doc.id}
-              className="card w-80 bg-base-100 shadow-xl shrink-0"
+              className="card w-96 bg-base-100 shadow-md border border-base-300"
             >
-              <div className="card-body space-y-2">
-                <h2 className="card-title">
+              <div className="card-body space-y-3">
+                <h2 className="card-title text-lg">
                   {doc.type?.text ||
-                    doc?.description ||
+                    doc.description ||
                     attachment?.contentType ||
                     "Unknown Type"}
                 </h2>
@@ -179,11 +179,11 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
                 </p>
 
                 {loadingDocId === doc.id ? (
-                  <div className="flex justify-center my-2">
-                    <span className="loading loading-spinner loading-sm text-primary"></span>
+                  <div className="flex justify-center py-4">
+                    <span className="loading loading-spinner text-primary"></span>
                   </div>
                 ) : (
-                  <div className="card-actions justify-end">
+                  <div className="card-actions justify-end gap-2">
                     <button
                       className="btn btn-sm btn-outline"
                       onClick={() => fetchAndShowDocument(doc)}
@@ -191,7 +191,7 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
                       View Content
                     </button>
                     <button
-                      className="btn btn-primary btn-sm"
+                      className="btn btn-sm btn-primary"
                       onClick={() => handleAnalyze(doc)}
                     >
                       Analyze
@@ -200,29 +200,23 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
                 )}
 
                 {analysis && (
-                  <>
-                    <div className="bg-base-200 p-2 rounded text-sm text-left whitespace-pre-wrap max-h-40 overflow-y-auto space-y-2">
-                      {templatedQuestions.length > 0 ? (
-                        templatedQuestions.map((question, idx) => {
-                          const answerLines = analysis
-                            .split("\n")
-                            .filter(Boolean); // simple split by line
-                          const answer =
-                            answerLines[idx] || "(No answer found)";
-                          return (
-                            <div key={idx}>
-                              <strong className="text-gray-700">
-                                Q: {question}
-                              </strong>
-                              <p className="ml-2">A: {answer}</p>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <pre>{analysis}</pre>
-                      )}
-                    </div>
-                    <div className="flex justify-end gap-2 mt-2">
+                  <div className="bg-base-200 rounded-md p-3 max-h-40 overflow-y-auto text-sm whitespace-pre-wrap">
+                    {templatedQuestions.length > 0 ? (
+                      templatedQuestions.map((q, idx) => {
+                        const lines = analysis.split("\n").filter(Boolean);
+                        return (
+                          <div key={idx} className="mb-1">
+                            <strong className="text-gray-700">Q: {q}</strong>
+                            <p className="ml-2">
+                              A: {lines[idx] || "No answer found."}
+                            </p>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <pre>{analysis}</pre>
+                    )}
+                    <div className="flex justify-end mt-2">
                       <PDFDownloadLink
                         document={<AnalysisPDF content={analysis} />}
                         fileName={`analysis-${doc.id}.pdf`}
@@ -231,13 +225,11 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
                         Download PDF
                       </PDFDownloadLink>
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {error && (
-                  <div className="alert alert-error text-sm whitespace-pre-wrap">
-                    {error}
-                  </div>
+                  <div className="alert alert-error text-sm">{error}</div>
                 )}
               </div>
             </div>
@@ -245,17 +237,16 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
         })}
       </div>
 
-      {/* Content modal */}
       {showContentModal && docContent && (
         <dialog className="modal modal-open">
           <div className="modal-box max-w-4xl">
-            <h3 className="font-bold text-lg mb-2">Document Content</h3>
-            <div className="max-h-[70vh] overflow-y-auto">
+            <h3 className="font-bold text-lg mb-3">Document Content</h3>
+            <div className="max-h-[65vh] overflow-y-auto mb-4">
               {docContent.startsWith("data:image/") ? (
                 <img
                   src={docContent}
                   alt="Document Image"
-                  className="w-full rounded"
+                  className="rounded w-full"
                 />
               ) : docContentType?.includes("xml") ? (
                 (() => {
@@ -277,12 +268,12 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
                     ) : (
                       <pre>{decoded}</pre>
                     );
-                  } catch (e) {
+                  } catch {
                     return <pre>{docContent}</pre>;
                   }
                 })()
               ) : (
-                <pre className="text-sm whitespace-pre-wrap bg-base-200 p-2 rounded">
+                <pre className="bg-base-200 p-3 rounded text-sm whitespace-pre-wrap">
                   {docContent}
                 </pre>
               )}
