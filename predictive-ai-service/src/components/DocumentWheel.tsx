@@ -43,6 +43,7 @@ export const DocumentWheel: React.FC = () => {
     (state: RootState) => state.questions.questions
   );
   const [activeDoc, setActiveDoc] = useState<DocumentReference | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const { analyzeItem } = useAIQueue();
 
@@ -153,6 +154,7 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
   };
 
   const handleCreateTemplateQuestion = async (doc: DocumentReference) => {
+    setIsGenerating(true);
     try {
       const result = await analyzeItem(
         "DocumentReference",
@@ -164,10 +166,11 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 
           return `You are a clinical question generation assistant. Based on the following medical document, generate **only one short, clear, and clinically relevant question** in a single sentence that can be used to assess understanding or extract further insight from the document.
 
-          - The output must be **only** the question sentence.
-          - Do **not** add any explanations, notes, or additional text.
-          - The question should be specific, unambiguous, and answerable solely using the document's content.
-          - Example of the expected format: "Are there any abnormal lab findings?"
+          IMPORTANT:
+          - Return ONLY the question sentence.
+          - Do NOT include any explanation, introduction, or additional text.
+          - The question must be specific, unambiguous, and answerable solely using the document's content.
+          - Example of expected output: "Are there any abnormal lab findings?"
 
           Document:
           --------------------
@@ -186,7 +189,8 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           ? result.trim()
           : result?.content?.trim() || result?.result?.content?.trim() || "";
 
-      const question = rawQuestion.split(/[\n\.]/)[0].trim(); // Take first sentence or line
+      // Parse only first sentence (in case extra text sneaks in)
+      const question = rawQuestion.split(/[\n\.]/)[0].trim();
 
       if (question) {
         const existingQuestions = store.getState().questions.questions || [];
@@ -196,6 +200,8 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
       }
     } catch (err) {
       console.error("Failed to generate template question:", err);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -350,12 +356,14 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
                 onClick={() =>
                   handleCreateTemplateQuestion(activeDoc as DocumentReference)
                 }
+                disabled={isGenerating}
               >
-                Create Template Question
+                {isGenerating ? "Processing..." : "Create Template Question"}
               </button>
               <button
                 className="btn"
                 onClick={() => setShowContentModal(false)}
+                disabled={isGenerating}
               >
                 Close
               </button>
