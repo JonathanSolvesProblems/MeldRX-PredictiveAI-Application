@@ -308,17 +308,6 @@ export function RenderStructuredResult({ result }: { result: any }) {
 
   return (
     <div className="space-y-6">
-      {/* PDF download button */}
-      <div className="flex justify-end">
-        <PDFDownloadLink
-          document={<AnalysisPDF content={formatResultForPDF(result)} />}
-          fileName="analysis-summary.pdf"
-          className="btn btn-outline btn-sm"
-        >
-          Download PDF
-        </PDFDownloadLink>
-      </div>
-
       <div className="flex justify-end">
         <PDFDownloadLink
           document={<AnalysisPDF content={formatResultForPDF(result)} />}

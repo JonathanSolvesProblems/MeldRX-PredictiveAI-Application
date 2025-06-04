@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { fetchFHIRResource } from "@/utils/fhirAPICalls";
 import { useSelector } from "react-redux";
@@ -11,8 +13,6 @@ export const RenderTemplatedQnA = ({ content }: { content: string }) => {
   const patientId = useSelector((state: RootState) => state.auth.patientId);
   const [fetched, setFetched] = useState<Record<string, any>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-  console.log("RenderTemplatedQnA content:", content);
 
   if (typeof content !== "string") {
     return (
@@ -89,22 +89,28 @@ export const RenderTemplatedQnA = ({ content }: { content: string }) => {
           .trim();
 
         return (
-          <div key={idx} className="card bg-base-100 shadow p-4 space-y-2">
-            <h3 className="text-lg font-semibold">
+          <div
+            key={idx}
+            className="card bg-base-100 shadow-lg p-4 space-y-3 text-white"
+          >
+            <h3 className="text-lg font-bold">
               {idx + 1}) {question}
             </h3>
-            <p className="whitespace-pre-wrap">{cleanAnswer}</p>
 
+            <p className="whitespace-pre-wrap text-sm">{cleanAnswer}</p>
+
+            {/* Resource References */}
             {resources.map((ref) => (
-              <div key={ref} className="mt-2">
+              <div key={ref} className="mt-1">
                 <button
                   onClick={() => handleToggleFetch(ref)}
                   className="btn btn-xs btn-outline"
                 >
                   {expanded[ref] ? "Hide" : "View"} {ref}
                 </button>
+
                 {expanded[ref] && fetched[ref] && (
-                  <pre className="bg-base-200 mt-2 p-2 rounded text-xs whitespace-pre-wrap">
+                  <pre className="bg-base-200 mt-2 p-2 rounded text-xs whitespace-pre-wrap overflow-auto max-h-60">
                     {JSON.stringify(fetched[ref], null, 2)}
                   </pre>
                 )}
