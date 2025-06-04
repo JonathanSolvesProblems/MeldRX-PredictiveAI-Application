@@ -153,6 +153,23 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
     }
   };
 
+  function extractFirstQuestion(text: string): string | null {
+    // Try to find numbered question starting with "1." or "1)"
+    const numberedMatch = text.match(/^\s*1[.)]\s*(.+?)(?=\n2[.)]|$)/ms);
+    if (numberedMatch && numberedMatch[1]) {
+      return numberedMatch[1].trim();
+    }
+
+    // Otherwise, fallback: find first sentence ending with a question mark
+    const questionMatch = text.match(/(.+?\?)/);
+    if (questionMatch) {
+      return questionMatch[1].trim();
+    }
+
+    // No question found
+    return null;
+  }
+
   const handleCreateTemplateQuestion = async (doc: DocumentReference) => {
     setIsGenerating(true);
     try {
@@ -164,17 +181,17 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           const cached = docContentCache[doc.id];
           const docContent = cached ? cached.content : JSON.stringify(doc);
 
-          return `You are a clinical question generation assistant. Based on the following medical document, generate **only one short, clear, and clinically relevant question** in a single sentence that can be used to assess understanding or extract further insight from the document.
+          return `You are a clinical question generation assistant. Based on the following medical document, generate **one or more clinically relevant questions** to assess understanding or extract further insight.
 
-          IMPORTANT:
-          - Return ONLY the question sentence.
-          - Do NOT include any explanation, introduction, or additional text.
-          - The question must be specific, unambiguous, and answerable solely using the document's content.
-          - Example of expected output: "Are there any abnormal lab findings?"
+          Return the questions as a numbered list, e.g.:
+          1. Are there any abnormal lab findings?
+          2. What is the patient's current medication?
 
           Document:
           --------------------
           ${docContent}
+
+          Return ONLY the questions as a numbered list.
           `;
         },
         (doc) => {
@@ -184,13 +201,12 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
         }
       );
 
-      const rawQuestion =
+      const rawResponse =
         typeof result === "string"
           ? result.trim()
           : result?.content?.trim() || result?.result?.content?.trim() || "";
 
-      // Parse only first sentence (in case extra text sneaks in)
-      const question = rawQuestion.split(/[\n\.]/)[0].trim();
+      const question = extractFirstQuestion(rawResponse);
 
       if (question) {
         const existingQuestions = store.getState().questions.questions || [];
