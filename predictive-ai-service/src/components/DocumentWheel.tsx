@@ -154,20 +154,9 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
   };
 
   function extractFirstQuestion(text: string): string | null {
-    // Try to find numbered question starting with "1." or "1)"
-    const numberedMatch = text.match(/^\s*1[.)]\s*([\s\S]*?)(?=\n2[.)]|$)/m);
-    if (numberedMatch && numberedMatch[1]) {
-      return numberedMatch[1].trim();
-    }
-
-    // Otherwise, fallback: find first sentence ending with a question mark
-    const questionMatch = text.match(/(.+?\?)/);
-    if (questionMatch) {
-      return questionMatch[1].trim();
-    }
-
-    // No question found
-    return null;
+    // Try to find the first question mark in a sentence
+    const match = text.match(/([^.?!]*\?)/);
+    return match ? match[1].trim() : null;
   }
 
   const handleCreateTemplateQuestion = async (doc: DocumentReference) => {
@@ -181,18 +170,21 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           const cached = docContentCache[doc.id];
           const docContent = cached ? cached.content : JSON.stringify(doc);
 
-          return `You are a clinical question generation assistant. Based on the following medical document, generate **one or more clinically relevant questions** to assess understanding or extract further insight.
+          return `You are a clinical question generation assistant.
 
-          Return the questions as a numbered list, e.g.:
-          1. Are there any abnormal lab findings?
-          2. What is the patient's current medication?
+            Based on the following medical document, generate exactly one short, clear, and clinically relevant question in a single sentence.
 
-          Document:
-          --------------------
-          ${docContent}
+            The question must:
+            - Be specific and unambiguous.
+            - Be answerable solely using the document's content.
+            - Contain no explanations, no analyses, no additional text — ONLY the question sentence.
+            - Example: "Are there any abnormal lab findings?"
 
-          Return ONLY the questions as a numbered list.
-          `;
+            Document:
+            --------------------
+            ${docContent}
+
+            Return ONLY the single question sentence with no other text.`;
         },
         (doc) => {
           const cached = docContentCache[doc.id];
