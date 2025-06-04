@@ -3,6 +3,7 @@ import useAnalyses from "./hooks/useAnalyses";
 import { RiskChip } from "./charts/RiskChip";
 import RiskTrendChart from "./charts/RiskTrendChart";
 import { RootState } from "@/app/redux/store";
+import { TrendingUp, ShieldCheck } from "lucide-react";
 
 export default function Dashboards() {
   const token = useSelector((state: RootState) => state.auth.token);
@@ -14,7 +15,6 @@ export default function Dashboards() {
 
   const { history, latest } = useAnalyses(token, patientId);
 
-  // Pull the two most-recent cardiac scores
   const cardiacHistory = history
     .filter((h) => h.label === "Cardiovascular Risk")
     .sort((a, b) => (a.date > b.date ? -1 : 1));
@@ -23,11 +23,12 @@ export default function Dashboards() {
   const previous = cardiacHistory[1]?.score;
 
   return (
-    <div className="space-y-6">
-      {/* Instant status pill */}
+    <section className="space-y-6">
+      {/* Current CV Risk Status */}
       {current && (
-        <div className="card px-4 py-2 bg-base-200 w-max">
-          <span className="mr-2 font-medium">Current CV risk:</span>
+        <div className="card bg-gradient-to-r from-blue-100 to-blue-50 text-blue-900 shadow-lg w-fit px-6 py-3 flex items-center gap-3">
+          <TrendingUp className="w-5 h-5 text-blue-600" />
+          <span className="font-semibold text-sm">Current CV Risk:</span>
           <RiskChip
             current={
               ["Low", "Moderate", "High"][current - 1] as
@@ -44,19 +45,28 @@ export default function Dashboards() {
         </div>
       )}
 
-      {/* Chart */}
-      <RiskTrendChart data={history} />
+      {/* Risk Trend Chart */}
+      <div className="bg-base-100 rounded-xl shadow-md p-4">
+        <h3 className="text-lg font-semibold mb-2 text-gray-700">
+          Cardiovascular Risk Over Time
+        </h3>
+        <RiskTrendChart data={history} />
+      </div>
 
-      {/* Treatments & preventive measures */}
+      {/* Recommendations */}
       {latest && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="card bg-base-100 shadow-md">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="card bg-base-100 shadow-lg border border-base-200 hover:shadow-xl transition-all">
             <div className="card-body">
-              <h3 className="card-title">Recommended treatments</h3>
-              <ul className="list-disc ml-4">
+              <h3 className="card-title flex items-center gap-2 text-green-600">
+                <ShieldCheck className="w-5 h-5" /> Recommended Treatments
+              </h3>
+              <ul className="list-disc ml-4 text-sm mt-2">
                 {latest.recommendedTreatments.map((t) => (
-                  <li key={t.treatment}>
-                    <span className="font-medium">{t.condition}: </span>
+                  <li key={t.treatment} className="mb-1">
+                    <span className="font-medium text-gray-800">
+                      {t.condition}:
+                    </span>{" "}
                     {t.treatment}
                   </li>
                 ))}
@@ -64,18 +74,22 @@ export default function Dashboards() {
             </div>
           </div>
 
-          <div className="card bg-base-100 shadow-md">
+          <div className="card bg-base-100 shadow-lg border border-base-200 hover:shadow-xl transition-all">
             <div className="card-body">
-              <h3 className="card-title">Preventive measures</h3>
-              <ul className="list-disc ml-4">
+              <h3 className="card-title flex items-center gap-2 text-yellow-600">
+                <ShieldCheck className="w-5 h-5" /> Preventive Measures
+              </h3>
+              <ul className="list-disc ml-4 text-sm mt-2">
                 {latest.preventiveMeasures.map((m) => (
-                  <li key={m}>{m}</li>
+                  <li key={m} className="mb-1">
+                    {m}
+                  </li>
                 ))}
               </ul>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

@@ -287,19 +287,15 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
 
   return (
     <div className="p-6 max-h-screen overflow-y-auto">
-      {/* <h1 className="text-3xl font-bold mb-4">Dashboard</h1> */}
-
-      <div className="bg-base-200 p-4 rounded-lg mb-6">
+      <div className="bg-base-200 p-4 rounded-lg mb-6 shadow">
         <p className="text-md mb-2">
-          Click the{" "}
-          <span className="font-semibold">"Analyze Patient Data"</span> button
-          below to re-analyze the patient's data. It will appear when the
-          patient's data is not being analyzed.
+          Click <span className="font-semibold">"Analyze Patient Data"</span> to
+          generate insights. It will appear when the patient’s data is not being
+          analyzed.
         </p>
         <p className="text-md">
-          <span className="font-semibold">Optional:</span> You can also import
-          templated questions from an Excel file first to tailor the analysis to
-          your specific needs.
+          <span className="font-semibold">Optional:</span> Import templated
+          questions from Excel to tailor your results.
         </p>
       </div>
 
@@ -313,10 +309,10 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
       </div>
 
       {isRunning && <Spinner />}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {!isRunning && (
-        <div className="mt-8 pb-6 flex justify-center">
+        <div className="my-6 flex justify-center">
           <button
             className="btn btn-primary text-white shadow-lg hover:shadow-xl transition duration-200 rounded-lg px-6 py-2"
             onClick={analyzeData}
@@ -328,13 +324,11 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
 
       {!isRunning &&
         Object.entries(results).map(([type, entries]) => (
-          <div key={type} className="mb-4 border rounded p-3 shadow">
-            <h2 className="text-lg font-semibold mb-2">{type}</h2>
+          <div key={type} className="mb-6">
+            <h2 className="text-xl font-bold mb-2">{type}</h2>
 
             {entries.map((entry, i) => {
               const res = entry.result;
-              console.log("Structured result passed:", res);
-
               const isStructured =
                 res &&
                 typeof res === "object" &&
@@ -344,22 +338,20 @@ Be concise and medically accurate. Only use fields that are applicable. Do not i
                   "preventiveMeasures" in res ||
                   "summaryText" in res);
 
-              console.log("Is structured result:", isStructured);
-
               const isQnA =
                 typeof res === "string" || typeof res?.content === "string";
 
               return (
                 <div
                   key={i}
-                  className="my-4 p-4 rounded-lg shadow bg-base-100 border"
+                  className="bg-base-100 rounded-xl border shadow p-4 mb-4"
                 >
                   {isStructured ? (
                     <RenderStructuredResult result={res} />
                   ) : isQnA ? (
                     <RenderTemplatedQnA content={res?.content || res} />
                   ) : (
-                    <pre className="whitespace-pre-wrap text-sm">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-700">
                       {res?.content
                         ? res.content
                         : res

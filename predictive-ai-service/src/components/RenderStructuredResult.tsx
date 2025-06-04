@@ -135,18 +135,16 @@ export function RenderStructuredResult({ result }: { result: any }) {
 
   const sectionMap: Record<string, JSX.Element | null> = {
     summaryText: result.summaryText ? (
-      <div className="card shadow-md bg-base-100">
-        <div className="card-body">
-          <h3 className="text-lg font-bold text-white">Summary</h3>
-          <p className="text-sm text-white">{result.summaryText}</p>
-        </div>
+      <div className="card bg-base-100 shadow-md p-4">
+        <h3 className="text-xl font-bold text-white mb-2">Summary</h3>
+        <p className="text-sm text-white">{result.summaryText}</p>
       </div>
     ) : null,
 
     accuracy:
       accuracyPercent !== null ? (
-        <div className="card shadow bg-base-100 p-4">
-          <h4 className="font-semibold text-white mb-2">Accuracy</h4>
+        <div className="card bg-base-100 shadow-md p-4">
+          <h4 className="text-xl font-semibold text-white mb-2">Accuracy</h4>
           <div className="flex items-center justify-center">
             <ResponsiveContainer width={100} height={100}>
               <PieChart>
@@ -166,12 +164,12 @@ export function RenderStructuredResult({ result }: { result: any }) {
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-            <span className="text-white text-lg font-bold ml-4">
+            <span className="text-white text-xl font-bold ml-4">
               {accuracyPercent}%
             </span>
           </div>
           {result.accuracyExplanation && (
-            <p className="text-white text-sm mt-2">
+            <p className="text-sm text-white mt-2">
               {result.accuracyExplanation}
             </p>
           )}
@@ -180,25 +178,18 @@ export function RenderStructuredResult({ result }: { result: any }) {
 
     riskScores:
       riskData.length > 0 ? (
-        <div>
-          <h4 className="font-semibold mb-2 text-white">Risk Scores</h4>
+        <div className="card bg-base-100 shadow-md p-4">
+          <h4 className="text-xl font-semibold text-white mb-2">Risk Scores</h4>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={riskData}>
-              <XAxis
-                dataKey="name"
-                tick={{ fill: "white" }}
-                axisLine={{ stroke: "#ccc" }}
-              />
+              <XAxis dataKey="name" tick={{ fill: "white" }} />
               <YAxis
                 ticks={[1, 2, 3]}
                 domain={[0, 3]}
                 tick={{ fill: "white" }}
-                axisLine={{ stroke: "#ccc" }}
               />
               <Tooltip
-                formatter={(value: number) =>
-                  ["Low", "Moderate", "High"][value - 1]
-                }
+                formatter={(v: number) => ["Low", "Moderate", "High"][v - 1]}
               />
               <Bar dataKey="score">
                 {riskData.map((entry: any, idx: number) => (
@@ -211,8 +202,8 @@ export function RenderStructuredResult({ result }: { result: any }) {
       ) : null,
 
     recommendedTreatments: result.recommendedTreatments?.length ? (
-      <div>
-        <h4 className="font-semibold mb-2 text-white">
+      <div className="card bg-base-100 shadow-md p-4">
+        <h4 className="text-xl font-semibold text-white mb-2">
           Recommended Treatments
         </h4>
         <ul className="list-disc ml-5 space-y-1 text-white">
@@ -227,8 +218,10 @@ export function RenderStructuredResult({ result }: { result: any }) {
     ) : null,
 
     preventiveMeasures: result.preventiveMeasures?.length ? (
-      <div>
-        <h4 className="font-semibold mb-2 text-white">Preventive Measures</h4>
+      <div className="card bg-base-100 shadow-md p-4">
+        <h4 className="text-xl font-semibold text-white mb-2">
+          Preventive Measures
+        </h4>
         <ul className="list-disc ml-5 space-y-1 text-white">
           {result.preventiveMeasures.map((p: string, idx: number) => (
             <li key={idx}>{p}</li>
@@ -238,8 +231,10 @@ export function RenderStructuredResult({ result }: { result: any }) {
     ) : null,
 
     patientCompliance: buildComplianceData(result.patientCompliance).length ? (
-      <div>
-        <h4 className="font-semibold mb-2 text-white">Compliance</h4>
+      <div className="card bg-base-100 shadow-md p-4">
+        <h4 className="text-xl font-semibold text-white mb-2">
+          Patient Compliance
+        </h4>
         <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie
@@ -264,8 +259,8 @@ export function RenderStructuredResult({ result }: { result: any }) {
         {Object.entries(result.graphOptions).map(([label, opt]: any, idx) => {
           if (opt.displayAs !== "line" || !opt.trend) return null;
           return (
-            <div key={idx} className="space-y-2">
-              <h4 className="font-semibold mb-2 text-white">{label}</h4>
+            <div key={idx} className="card bg-base-100 shadow-md p-4 space-y-2">
+              <h4 className="text-xl font-semibold text-white mb-2">{label}</h4>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={opt.dataPoints}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -288,19 +283,19 @@ export function RenderStructuredResult({ result }: { result: any }) {
     ) : null,
 
     sources: result.sources?.length ? (
-      <div>
-        <h4 className="font-semibold mb-2 text-white">Sources</h4>
-        <ul className="space-y-2">
+      <div className="card bg-base-100 shadow-md p-4">
+        <h4 className="text-xl font-semibold text-white mb-2">Sources</h4>
+        <ul className="space-y-3">
           {result.sources.map((source: string, idx: number) => (
-            <li key={idx} className="flex flex-col">
+            <li key={idx}>
               <button
-                className="btn btn-sm btn-outline w-fit"
+                className="btn btn-sm btn-outline w-fit mb-1"
                 onClick={() => toggleSource(source)}
               >
                 {openSources[source] ? "Hide" : "View"} {source}
               </button>
               {openSources[source] && fetchedSources[source] && (
-                <pre className="bg-base-200 p-2 mt-1 text-xs whitespace-pre-wrap rounded max-h-60 overflow-auto text-white">
+                <pre className="bg-base-200 p-2 rounded text-xs whitespace-pre-wrap overflow-auto max-h-60 text-white">
                   {JSON.stringify(fetchedSources[source], null, 2)}
                 </pre>
               )}
@@ -324,11 +319,14 @@ export function RenderStructuredResult({ result }: { result: any }) {
         </PDFDownloadLink>
       </div>
 
-      <div ref={contentRef} className="space-y-6">
-        {sectionsOrder
-          .filter((key) => !hidden.has(key))
-          .map((key) => sectionMap[key])
-          .filter(Boolean)}
+      <div className="flex justify-end">
+        <PDFDownloadLink
+          document={<AnalysisPDF content={formatResultForPDF(result)} />}
+          fileName="analysis-summary.pdf"
+          className="btn btn-outline btn-sm"
+        >
+          Download PDF
+        </PDFDownloadLink>
       </div>
     </div>
   );
