@@ -1,63 +1,109 @@
-"use client";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { XCircle, Pencil } from "lucide-react";
 
-import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { XCircle } from "lucide-react";
-
-interface QuestionsOverlayProps {
+type Props = {
   open: boolean;
   questions: string[];
   onClose: () => void;
-}
+  onUpdate?: (updated: string[]) => void;
+};
 
-export default function QuestionsOverlay({
+const QuestionsOverlay: React.FC<Props> = ({
   open,
   questions,
   onClose,
-}: QuestionsOverlayProps) {
+  onUpdate,
+}) => {
+  const [editableQuestions, setEditableQuestions] = useState(questions);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState("");
+
+  const handleEditClick = (index: number) => {
+    setEditingIndex(index);
+    setEditValue(editableQuestions[index]);
+  };
+
+  const handleSave = () => {
+    if (editingIndex !== null) {
+      const updated = [...editableQuestions];
+      updated[editingIndex] = editValue;
+      setEditableQuestions(updated);
+      setEditingIndex(null);
+      if (onUpdate) onUpdate(updated);
+    }
+  };
+
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          key="overlay"
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="card bg-base-100 shadow-2xl w-full max-w-lg mx-4"
+            className="bg-base-100 rounded-xl p-6 shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto relative"
+            initial={{ scale: 0.95, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.95, y: 20 }}
           >
-            <div className="card-body space-y-4">
-              <div className="flex justify-between items-start">
-                <h2 className="card-title text-xl">
-                  Loaded Questions ({questions.length})
-                </h2>
-                <button
-                  onClick={onClose}
-                  className="btn btn-sm btn-circle btn-ghost"
-                  aria-label="Close questions overlay"
-                >
-                  <XCircle className="w-5 h-5" />
-                </button>
-              </div>
+            <button
+              onClick={onClose}
+              className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost"
+            >
+              <XCircle className="w-5 h-5" />
+            </button>
 
-              <ul className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
-                {questions.map((q, idx) => (
-                  <li key={idx} className="flex gap-2 items-start">
-                    <span className="font-bold">{idx + 1}.</span>
-                    <span className="flex-1 text-sm">{q}</span>
-                  </li>
-                ))}
-              </ul>
+            <h3 className="text-lg font-bold mb-4">Templated Questions</h3>
+
+            <div className="space-y-4">
+              {editableQuestions.map((q, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="font-bold w-6 text-right">{i + 1}.</span>
+                  {editingIndex === i ? (
+                    <div className="flex flex-col w-full gap-1">
+                      <textarea
+                        className="textarea textarea-bordered text-sm w-full"
+                        rows={2}
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <button
+                          className="btn btn-sm btn-primary"
+                          onClick={handleSave}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          onClick={() => setEditingIndex(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between w-full items-center">
+                      <p className="text-sm whitespace-pre-wrap w-full">{q}</p>
+                      <button
+                        className="btn btn-xs btn-ghost"
+                        onClick={() => handleEditClick(i)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
-}
+};
+
+export default QuestionsOverlay;
