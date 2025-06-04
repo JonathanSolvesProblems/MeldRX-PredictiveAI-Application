@@ -162,15 +162,19 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           const cached = docContentCache[doc.id];
           const docContent = cached ? cached.content : JSON.stringify(doc);
 
-          return `You are a clinical question generation assistant. Based on the following medical document, generate **one clinically relevant question** that can be used to assess understanding or extract further insight from the document. 
+          return `You are a clinical question generation assistant. Based on the following medical document, generate **one short, clear, and clinically relevant question** in a single sentence that can be used to assess understanding or extract further insight from the document.
 
-The question should be specific, unambiguous, and answerable solely using the document's content.
+          The question should be:
+          - Specific
+          - Unambiguous
+          - Answerable solely using the document's content
+          - Only one concise sentence (e.g., "Are there any abnormal lab findings?")
 
-Document:
---------------------
-${docContent}
+          Document:
+          --------------------
+          ${docContent}
 
-Return only the question.`;
+          Return only the question sentence.`;
         },
         (doc) => {
           const cached = docContentCache[doc.id];
@@ -287,8 +291,19 @@ Return only the question.`;
       </div>
 
       {showContentModal && docContent && (
-        <dialog className="modal modal-open">
-          <div className="modal-box max-w-3xl max-h-[80vh] overflow-y-auto">
+        <dialog
+          open
+          className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
+          style={{ zIndex: 50 }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowContentModal(false); // close clicking outside modal box
+          }}
+        >
+          <div
+            className="modal-box bg-base-100 rounded-lg shadow-lg max-w-3xl max-h-[80vh] overflow-y-auto p-6"
+            onClick={(e) => e.stopPropagation()} // prevent closing clicking inside modal
+            style={{ width: "100%", maxWidth: "768px" }}
+          >
             <h3 className="font-bold text-lg mb-3">Document Content</h3>
             <div className="mb-4">
               {docContent.startsWith("data:image/") ? (
@@ -327,21 +342,21 @@ Return only the question.`;
                 </pre>
               )}
             </div>
-            <div className="modal-action flex justify-between items-center">
+
+            <div className="modal-action flex justify-between">
+              <button
+                className="btn"
+                onClick={() => setShowContentModal(false)}
+              >
+                Close
+              </button>
               <button
                 className="btn btn-secondary"
                 onClick={() =>
                   handleCreateTemplateQuestion(activeDoc as DocumentReference)
                 }
               >
-                Generate Template Question
-              </button>
-
-              <button
-                className="btn"
-                onClick={() => setShowContentModal(false)}
-              >
-                Close
+                Create Template Question
               </button>
             </div>
           </div>
