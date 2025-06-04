@@ -7,7 +7,7 @@ import { setQuestions } from "@/app/redux/questionSlice";
 import * as XLSX from "xlsx";
 import { UploadCloud, XCircle, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import QuestionsOverlay from "./QuestionsOverlay";
+import { QuestionsOverlay } from "./QuestionsOverlay";
 
 export const QuestionUploader: React.FC = () => {
   const dispatch = useDispatch();
@@ -108,11 +108,13 @@ export const QuestionUploader: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <QuestionsOverlay
-        open={showOverlay}
-        questions={questions}
-        onClose={() => setShowOverlay(false)}
-      />
+      {showOverlay && (
+        <QuestionsOverlay
+          open={showOverlay}
+          questions={questions}
+          onClose={() => setShowOverlay(false)}
+        />
+      )}
     </motion.div>
   );
 };
