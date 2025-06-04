@@ -155,7 +155,7 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 
   function extractFirstQuestion(text: string): string | null {
     // Try to find numbered question starting with "1." or "1)"
-    const numberedMatch = text.match(/^\s*1[.)]\s*(.+?)(?=\n2[.)]|$)/ms);
+    const numberedMatch = text.match(/^\s*1[.)]\s*([\s\S]*?)(?=\n2[.)]|$)/m);
     if (numberedMatch && numberedMatch[1]) {
       return numberedMatch[1].trim();
     }
