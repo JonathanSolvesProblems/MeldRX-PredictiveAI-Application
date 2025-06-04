@@ -1,9 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Pencil, X, PlusCircle, Trash2 } from "lucide-react";
+import {
+  Pencil,
+  X,
+  PlusCircle,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useDispatch } from "react-redux";
 import { setQuestions } from "@/app/redux/questionSlice";
+
+const QUESTIONS_PER_PAGE = 5;
 
 export const QuestionsOverlay: React.FC<{
   open: boolean;
@@ -15,50 +24,67 @@ export const QuestionsOverlay: React.FC<{
     useState<string[]>(questions);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newQuestion, setNewQuestion] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
-    setEditableQuestions(questions); // sync if Redux state changes
+    setEditableQuestions(questions);
   }, [questions]);
 
+  const totalPages = Math.ceil(editableQuestions.length / QUESTIONS_PER_PAGE);
+
   const handleEdit = (index: number, value: string) => {
+    const globalIndex = currentPage * QUESTIONS_PER_PAGE + index;
     const updated = [...editableQuestions];
-    updated[index] = value;
+    updated[globalIndex] = value;
     setEditableQuestions(updated);
     dispatch(setQuestions(updated));
   };
 
   const handleAdd = () => {
     const trimmed = newQuestion.trim();
-    if (trimmed.length === 0) return;
+    if (!trimmed) return;
     const updated = [...editableQuestions, trimmed];
     setEditableQuestions(updated);
     dispatch(setQuestions(updated));
     setNewQuestion("");
+    setCurrentPage(totalPages); // jump to last page
   };
 
   const handleDelete = (index: number) => {
-    const updated = editableQuestions.filter((_, i) => i !== index);
+    const globalIndex = currentPage * QUESTIONS_PER_PAGE + index;
+    const updated = editableQuestions.filter((_, i) => i !== globalIndex);
     setEditableQuestions(updated);
     dispatch(setQuestions(updated));
+    if (currentPage > 0 && globalIndex === editableQuestions.length - 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
   };
+
+  const paginatedQuestions = editableQuestions.slice(
+    currentPage * QUESTIONS_PER_PAGE,
+    (currentPage + 1) * QUESTIONS_PER_PAGE
+  );
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-start pt-20 p-4">
-      <div className="bg-base-100 w-full max-w-2xl rounded-2xl shadow-lg p-6 space-y-4 relative">
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center p-4">
+      <div className="bg-base-100 w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-lg p-6 overflow-y-auto relative">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 btn btn-circle btn-sm btn-ghost"
         >
           <X className="w-5 h-5" />
         </button>
+
         <h2 className="text-lg font-bold mb-4">Templated Questions</h2>
 
-        <ul className="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
-          {editableQuestions.map((q, idx) => (
+        <ul className="space-y-3">
+          {paginatedQuestions.map((q, idx) => (
             <li key={idx} className="flex items-start gap-2">
-              <span className="text-base font-semibold mt-1">{idx + 1}.</span>
+              <span className="text-base font-semibold mt-1">
+                {currentPage * QUESTIONS_PER_PAGE + idx + 1}.
+              </span>
               {editingIndex === idx ? (
                 <input
                   className="input input-bordered w-full"
@@ -95,7 +121,31 @@ export const QuestionsOverlay: React.FC<{
           ))}
         </ul>
 
-        <div className="pt-4 border-t border-base-200 space-y-2">
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-4 gap-4">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 0))}
+              disabled={currentPage === 0}
+              className="btn btn-sm btn-ghost"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentPage((p) => Math.min(p + 1, totalPages - 1))
+              }
+              disabled={currentPage >= totalPages - 1}
+              className="btn btn-sm btn-ghost"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        <div className="pt-6 mt-4 border-t border-base-200 space-y-2">
           <h3 className="font-semibold">Add a New Question</h3>
           <div className="flex gap-2">
             <input
