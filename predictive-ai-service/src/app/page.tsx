@@ -8,6 +8,7 @@ import axios from "axios";
 import { DocumentWheel } from "@/components/DocumentWheel";
 import AICentralAnalyzer from "@/components/AICentralAnalyzer";
 import { QuestionUploader } from "@/components/QuestionUploader";
+import Dashboards from "@/components/Dashboards";
 // import AnalyzeDocumentsButton from "@/components/AnalyzeDocumentsButton";
 // import Dashboard from "@/components/Dashboard";
 
@@ -18,9 +19,9 @@ export default function Home() {
   const patientId = useSelector((state: any) => state.auth.patientId);
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [patientName, setPatientName] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"aianalyzer" | "documents">(
-    "aianalyzer"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "aianalyzer" | "documents" | "dashboards"
+  >("aianalyzer");
 
   useEffect(() => {
     // console.log("Redux User:", user);
@@ -106,6 +107,13 @@ export default function Home() {
         >
           Documents
         </a>
+        <a
+          role="tab"
+          className={`tab ${activeTab === "dashboards" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("dashboards")}
+        >
+          Dashboards
+        </a>
       </div>
 
       {/* Tab Panels */}
@@ -135,6 +143,13 @@ export default function Home() {
             <div className="p-4">
               <h1 className="text-xl font-bold mb-4">Patient Documents</h1>
               <DocumentWheel />
+            </div>
+          )}
+
+          {activeTab === "dashboards" && (
+            <div className="p-4">
+              <h1 className="text-xl font-bold mb-4">Dashboards</h1>
+              <Dashboards />
             </div>
           )}
         </>
