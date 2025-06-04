@@ -61,29 +61,25 @@ export default function Home() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (patientId && token) {
-      const fetchPatientName = async () => {
-        try {
-          const response = await axios.get(
-            `https://app.meldrx.com/api/fhir/23cd739c-3141-4d1a-81a3-697b766ccb56/Patient/${patientId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          const patientName = response.data.name[0];
-          const fullName = `${patientName.given.join(" ")} ${
-            patientName.family
-          }`;
-          setPatientName(fullName); // Set patient name state
-        } catch (error) {
-          console.error("Error fetching patient name:", error);
-        }
-      };
+    if (!patientId || !token) return;
 
-      fetchPatientName();
-    }
+    const fetchPatientName = async () => {
+      try {
+        const res = await axios.get(`/api/patient/${patientId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const nameObj = res.data.name?.[0];
+        if (nameObj) {
+          const full = `${nameObj.given.join(" ")} ${nameObj.family}`;
+          setPatientName(full);
+        }
+      } catch (e) {
+        console.error("Error fetching patient name", e);
+      }
+    };
+
+    fetchPatientName();
   }, [patientId, token]);
 
   return (
