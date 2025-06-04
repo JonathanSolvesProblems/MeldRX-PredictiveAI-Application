@@ -99,7 +99,6 @@ export const RenderTemplatedQnA = ({ content }: { content: string }) => {
 
             <p className="whitespace-pre-wrap text-sm">{cleanAnswer}</p>
 
-            {/* Resource References */}
             {resources.map((ref) => (
               <div key={ref} className="mt-1">
                 <button
