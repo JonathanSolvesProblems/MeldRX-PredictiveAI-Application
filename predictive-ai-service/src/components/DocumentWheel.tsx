@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { RootState } from "@/app/redux/store";
+import { RootState, store } from "@/app/redux/store";
 import { useSelector, useDispatch } from "react-redux";
 import { addAnalysis } from "@/app/redux/analysisSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import AnalysisPDF from "./AnalysisPDF";
 import { useAIQueue } from "./hooks/useAIQueue";
 import { useAllPatientData } from "./hooks/useAllPatientData";
+import { setQuestions } from "@/app/redux/questionSlice";
 
 type DocumentReference = {
   id: string;
@@ -158,7 +159,6 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
         doc,
         "Llama-3.2-11B-Vision-Instruct",
         (doc) => {
-          // Use cached content if available, else stringify doc as fallback
           const cached = docContentCache[doc.id];
           const docContent = cached ? cached.content : JSON.stringify(doc);
 
@@ -172,7 +172,6 @@ ${docContent}
 
 Return only the question.`;
         },
-        // No fetching here — just use cached content or throw error if missing
         (doc) => {
           const cached = docContentCache[doc.id];
           if (cached) return Promise.resolve(cached);
@@ -186,10 +185,11 @@ Return only the question.`;
           : result?.content?.trim() || result?.result?.content?.trim() || null;
 
       if (question) {
-        dispatch({
-          type: "questions/addQuestion", // Make sure this action exists in your slice
-          payload: question,
-        });
+        // Get existing questions from Redux state
+        const existingQuestions = store.getState().questions.questions || [];
+
+        // Append new question and update state
+        dispatch(setQuestions([...existingQuestions, question]));
       } else {
         console.warn("No question was generated.");
       }
