@@ -288,9 +288,9 @@ Return only the question.`;
 
       {showContentModal && docContent && (
         <dialog className="modal modal-open">
-          <div className="modal-box max-w-4xl">
+          <div className="modal-box max-w-3xl max-h-[80vh] overflow-y-auto">
             <h3 className="font-bold text-lg mb-3">Document Content</h3>
-            <div className="max-h-[65vh] overflow-y-auto mb-4">
+            <div className="mb-4">
               {docContent.startsWith("data:image/") ? (
                 <img
                   src={docContent}
