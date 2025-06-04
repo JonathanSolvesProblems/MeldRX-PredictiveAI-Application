@@ -41,6 +41,7 @@ export const DocumentWheel: React.FC = () => {
   const templatedQuestions = useSelector(
     (state: RootState) => state.questions.questions
   );
+  const [activeDoc, setActiveDoc] = useState<DocumentReference | null>(null);
 
   const { analyzeItem } = useAIQueue();
 
@@ -62,6 +63,7 @@ export const DocumentWheel: React.FC = () => {
         ...prev,
         [doc.id]: { content, contentType },
       }));
+      setActiveDoc(doc);
       setShowContentModal(true);
     } catch (err: any) {
       setErrors((prev) => ({
@@ -146,6 +148,53 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
       }));
     } finally {
       setLoadingDocId(null);
+    }
+  };
+
+  const handleCreateTemplateQuestion = async (doc: DocumentReference) => {
+    try {
+      const result = await analyzeItem(
+        "DocumentReference",
+        doc,
+        "Llama-3.2-11B-Vision-Instruct",
+        (doc) => {
+          // Use cached content if available, else stringify doc as fallback
+          const cached = docContentCache[doc.id];
+          const docContent = cached ? cached.content : JSON.stringify(doc);
+
+          return `You are a clinical question generation assistant. Based on the following medical document, generate **one clinically relevant question** that can be used to assess understanding or extract further insight from the document. 
+
+The question should be specific, unambiguous, and answerable solely using the document's content.
+
+Document:
+--------------------
+${docContent}
+
+Return only the question.`;
+        },
+        // No fetching here — just use cached content or throw error if missing
+        (doc) => {
+          const cached = docContentCache[doc.id];
+          if (cached) return Promise.resolve(cached);
+          return Promise.reject(new Error("Document content not cached"));
+        }
+      );
+
+      const question =
+        typeof result === "string"
+          ? result.trim()
+          : result?.content?.trim() || result?.result?.content?.trim() || null;
+
+      if (question) {
+        dispatch({
+          type: "questions/addQuestion", // Make sure this action exists in your slice
+          payload: question,
+        });
+      } else {
+        console.warn("No question was generated.");
+      }
+    } catch (err) {
+      console.error("Failed to generate template question:", err);
     }
   };
 
@@ -278,7 +327,16 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
                 </pre>
               )}
             </div>
-            <div className="modal-action">
+            <div className="modal-action flex justify-between items-center">
+              <button
+                className="btn btn-secondary"
+                onClick={() =>
+                  handleCreateTemplateQuestion(activeDoc as DocumentReference)
+                }
+              >
+                Generate Template Question
+              </button>
+
               <button
                 className="btn"
                 onClick={() => setShowContentModal(false)}
