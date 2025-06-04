@@ -162,19 +162,17 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           const cached = docContentCache[doc.id];
           const docContent = cached ? cached.content : JSON.stringify(doc);
 
-          return `You are a clinical question generation assistant. Based on the following medical document, generate **one short, clear, and clinically relevant question** in a single sentence that can be used to assess understanding or extract further insight from the document.
+          return `You are a clinical question generation assistant. Based on the following medical document, generate **only one short, clear, and clinically relevant question** in a single sentence that can be used to assess understanding or extract further insight from the document.
 
-          The question should be:
-          - Specific
-          - Unambiguous
-          - Answerable solely using the document's content
-          - Only one concise sentence (e.g., "Are there any abnormal lab findings?")
+          - The output must be **only** the question sentence.
+          - Do **not** add any explanations, notes, or additional text.
+          - The question should be specific, unambiguous, and answerable solely using the document's content.
+          - Example of the expected format: "Are there any abnormal lab findings?"
 
           Document:
           --------------------
           ${docContent}
-
-          Return only the question sentence.`;
+          `;
         },
         (doc) => {
           const cached = docContentCache[doc.id];
@@ -183,16 +181,15 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
         }
       );
 
-      const question =
+      const rawQuestion =
         typeof result === "string"
           ? result.trim()
-          : result?.content?.trim() || result?.result?.content?.trim() || null;
+          : result?.content?.trim() || result?.result?.content?.trim() || "";
+
+      const question = rawQuestion.split(/[\n\.]/)[0].trim(); // Take first sentence or line
 
       if (question) {
-        // Get existing questions from Redux state
         const existingQuestions = store.getState().questions.questions || [];
-
-        // Append new question and update state
         dispatch(setQuestions([...existingQuestions, question]));
       } else {
         console.warn("No question was generated.");
@@ -296,13 +293,17 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
           style={{ zIndex: 50 }}
           onClick={(e) => {
-            if (e.target === e.currentTarget) setShowContentModal(false); // close clicking outside modal box
+            if (e.target === e.currentTarget) setShowContentModal(false);
           }}
         >
           <div
-            className="modal-box bg-base-100 rounded-lg shadow-lg max-w-3xl max-h-[80vh] overflow-y-auto p-6"
-            onClick={(e) => e.stopPropagation()} // prevent closing clicking inside modal
-            style={{ width: "100%", maxWidth: "768px" }}
+            className="modal-box bg-base-100 rounded-lg shadow-lg max-w-3xl max-w-[90vw] max-h-[80vh] overflow-y-auto p-6"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "768px",
+              boxSizing: "border-box",
+            }}
           >
             <h3 className="font-bold text-lg mb-3">Document Content</h3>
             <div className="mb-4">
@@ -345,18 +346,18 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 
             <div className="modal-action flex justify-between">
               <button
-                className="btn"
-                onClick={() => setShowContentModal(false)}
-              >
-                Close
-              </button>
-              <button
                 className="btn btn-secondary"
                 onClick={() =>
                   handleCreateTemplateQuestion(activeDoc as DocumentReference)
                 }
               >
                 Create Template Question
+              </button>
+              <button
+                className="btn"
+                onClick={() => setShowContentModal(false)}
+              >
+                Close
               </button>
             </div>
           </div>
