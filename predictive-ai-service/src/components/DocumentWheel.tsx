@@ -154,13 +154,15 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
   };
 
   function extractFirstQuestion(text: string): string | null {
-    // Try to find the first question mark in a sentence
-    const match = text.match(/([^.?!]*\?)/);
+    // This regex captures the first sentence ending with a question mark
+    const match = text.match(/([^.!?]*\?)/);
     return match ? match[1].trim() : null;
   }
 
   const handleCreateTemplateQuestion = async (doc: DocumentReference) => {
+    // Start loading state
     setIsGenerating(true);
+
     try {
       const result = await analyzeItem(
         "DocumentReference",
@@ -170,21 +172,22 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
           const cached = docContentCache[doc.id];
           const docContent = cached ? cached.content : JSON.stringify(doc);
 
+          // Explicit prompt asking for ONLY one question, no explanation
           return `You are a clinical question generation assistant.
 
-            Based on the following medical document, generate exactly one short, clear, and clinically relevant question in a single sentence.
+Based on the following medical document, generate exactly one short, clear, and clinically relevant question in a single sentence.
 
-            The question must:
-            - Be specific and unambiguous.
-            - Be answerable solely using the document's content.
-            - Contain no explanations, no analyses, no additional text — ONLY the question sentence.
-            - Example: "Are there any abnormal lab findings?"
+The question must:
+- Be specific and unambiguous.
+- Be answerable solely using the document's content.
+- Contain no explanations, no analyses, no additional text — ONLY the question sentence.
+- Example: "Are there any abnormal lab findings?"
 
-            Document:
-            --------------------
-            ${docContent}
+Document:
+--------------------
+${docContent}
 
-            Return ONLY the single question sentence with no other text.`;
+Return ONLY the single question sentence with no other text.`;
         },
         (doc) => {
           const cached = docContentCache[doc.id];
@@ -193,11 +196,13 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
         }
       );
 
+      // Normalize result to string
       const rawResponse =
         typeof result === "string"
           ? result.trim()
           : result?.content?.trim() || result?.result?.content?.trim() || "";
 
+      // Extract only the first question sentence from the response
       const question = extractFirstQuestion(rawResponse);
 
       if (question) {
@@ -209,6 +214,7 @@ ${templatedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
     } catch (err) {
       console.error("Failed to generate template question:", err);
     } finally {
+      // End loading state
       setIsGenerating(false);
     }
   };
