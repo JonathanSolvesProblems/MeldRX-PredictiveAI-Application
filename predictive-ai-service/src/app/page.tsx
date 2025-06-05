@@ -215,11 +215,6 @@ export default function Home() {
           </button>
         </div>
       )}
-
-      <footer className="mt-10 text-center text-sm opacity-70">
-        App by Jonathan Andrei trying to make healthcare better - BIG thanks to
-        the MeldRx team
-      </footer>
     </main>
   );
 }

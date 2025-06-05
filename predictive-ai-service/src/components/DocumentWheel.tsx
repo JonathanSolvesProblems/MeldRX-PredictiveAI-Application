@@ -319,6 +319,24 @@ Return ONLY the single question sentence with no other text.`;
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-bold text-lg mb-3">Document Content</h3>
+            <div className="modal-action flex justify-between">
+              <button
+                className="btn btn-secondary"
+                onClick={() =>
+                  handleCreateTemplateQuestion(activeDoc as DocumentReference)
+                }
+                disabled={isGenerating}
+              >
+                {isGenerating ? "Processing..." : "Create Template Question"}
+              </button>
+              <button
+                className="btn"
+                onClick={() => setShowContentModal(false)}
+                disabled={isGenerating}
+              >
+                Close
+              </button>
+            </div>
             <div className="mb-4">
               {docContent.startsWith("data:image/") ? (
                 <img
@@ -361,25 +379,6 @@ Return ONLY the single question sentence with no other text.`;
                   {docContent}
                 </pre>
               )}
-            </div>
-
-            <div className="modal-action flex justify-between">
-              <button
-                className="btn btn-secondary"
-                onClick={() =>
-                  handleCreateTemplateQuestion(activeDoc as DocumentReference)
-                }
-                disabled={isGenerating}
-              >
-                {isGenerating ? "Processing..." : "Create Template Question"}
-              </button>
-              <button
-                className="btn"
-                onClick={() => setShowContentModal(false)}
-                disabled={isGenerating}
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
