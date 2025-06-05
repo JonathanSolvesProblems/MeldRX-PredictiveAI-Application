@@ -337,6 +337,7 @@ Return ONLY the single question sentence with no other text.`;
                 Close
               </button>
             </div>
+            <div className="h-12" />
             <div className="mb-4">
               {docContent.startsWith("data:image/") ? (
                 <img
