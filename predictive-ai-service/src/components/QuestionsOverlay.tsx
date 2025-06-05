@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Pencil,
   X,
@@ -23,12 +23,19 @@ export const QuestionsOverlay: React.FC<{
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newQuestion, setNewQuestion] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(0);
+  const [localQuestions, setLocalQuestions] = useState<string[]>(questions);
 
-  const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
+  useEffect(() => {
+    setLocalQuestions(questions);
+    // Ensure current page is updated correctly when a new question causes a new page
+    setCurrentPage(Math.floor((questions.length - 1) / QUESTIONS_PER_PAGE));
+  }, [questions]);
+
+  const totalPages = Math.ceil(localQuestions.length / QUESTIONS_PER_PAGE);
 
   const handleEdit = (index: number, value: string) => {
     const globalIndex = currentPage * QUESTIONS_PER_PAGE + index;
-    const updated = [...questions];
+    const updated = [...localQuestions];
     updated[globalIndex] = value;
     dispatch(setQuestions(updated));
   };
@@ -36,22 +43,21 @@ export const QuestionsOverlay: React.FC<{
   const handleAdd = () => {
     const trimmed = newQuestion.trim();
     if (!trimmed) return;
-    const updated = [...questions, trimmed];
+    const updated = [...localQuestions, trimmed];
     dispatch(setQuestions(updated));
     setNewQuestion("");
-    setCurrentPage(Math.floor(updated.length / QUESTIONS_PER_PAGE));
   };
 
   const handleDelete = (index: number) => {
     const globalIndex = currentPage * QUESTIONS_PER_PAGE + index;
-    const updated = questions.filter((_, i) => i !== globalIndex);
+    const updated = localQuestions.filter((_, i) => i !== globalIndex);
     dispatch(setQuestions(updated));
-    if (currentPage > 0 && globalIndex === questions.length - 1) {
+    if (currentPage > 0 && globalIndex === localQuestions.length - 1) {
       setCurrentPage((prev) => prev - 1);
     }
   };
 
-  const paginatedQuestions = questions.slice(
+  const paginatedQuestions = localQuestions.slice(
     currentPage * QUESTIONS_PER_PAGE,
     (currentPage + 1) * QUESTIONS_PER_PAGE
   );
@@ -59,7 +65,7 @@ export const QuestionsOverlay: React.FC<{
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center p-4">
+    <div className="fixed inset-0 z-[9999] bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center p-4">
       <div className="bg-base-100 w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-lg flex flex-col relative">
         <button
           onClick={onClose}
@@ -117,7 +123,6 @@ export const QuestionsOverlay: React.FC<{
         </div>
 
         <div className="p-6 pt-0 space-y-4 border-t border-base-200">
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-4">
               <button

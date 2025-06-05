@@ -68,6 +68,8 @@ export const useAIQueue = () => {
      } else {
       throw new Error("No prompt or item provided to analyze.");
     }
+
+    console.log(`🔍 Analyzing ${type} with prompt:`, prompt);
     
     // If fetchFn is provided (e.g., for documents), call it first
      if (fetchFn && item) {

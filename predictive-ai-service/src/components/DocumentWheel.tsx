@@ -308,22 +308,15 @@ Return ONLY the single question sentence with no other text.`;
       </div>
 
       {showContentModal && docContent && (
-        <dialog
-          open
-          className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
-          style={{ zIndex: 50 }}
+        <div
+          className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowContentModal(false);
           }}
         >
           <div
-            className="modal-box bg-base-100 rounded-lg shadow-lg max-w-3xl max-w-[90vw] max-h-[80vh] overflow-y-auto p-6"
+            className="bg-base-100 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "100%",
-              maxWidth: "768px",
-              boxSizing: "border-box",
-            }}
           >
             <h3 className="font-bold text-lg mb-3">Document Content</h3>
             <div className="mb-4">
@@ -351,14 +344,20 @@ Return ONLY the single question sentence with no other text.`;
                     return paragraph ? (
                       <p>{paragraph.textContent}</p>
                     ) : (
-                      <pre>{decoded}</pre>
+                      <pre className="bg-base-200 p-3 rounded text-sm whitespace-pre-wrap overflow-x-auto">
+                        {decoded}
+                      </pre>
                     );
                   } catch {
-                    return <pre>{docContent}</pre>;
+                    return (
+                      <pre className="bg-base-200 p-3 rounded text-sm whitespace-pre-wrap overflow-x-auto">
+                        {docContent}
+                      </pre>
+                    );
                   }
                 })()
               ) : (
-                <pre className="bg-base-200 p-3 rounded text-sm whitespace-pre-wrap">
+                <pre className="bg-base-200 p-3 rounded text-sm whitespace-pre-wrap overflow-x-auto">
                   {docContent}
                 </pre>
               )}
@@ -383,7 +382,7 @@ Return ONLY the single question sentence with no other text.`;
               </button>
             </div>
           </div>
-        </dialog>
+        </div>
       )}
     </div>
   );
