@@ -315,7 +315,7 @@ Return ONLY the single question sentence with no other text.`;
           }}
         >
           <div
-            className="bg-base-100 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6"
+            className="bg-base-100 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6 pb-12"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-bold text-lg mb-3">Document Content</h3>
